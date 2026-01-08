@@ -32,7 +32,7 @@ const epilogue = Epilogue({
 });
 
 export const metadata: Metadata = {
-  title: "LuxeDrive - Premium Car Rental",
+  title: "Rentago - Premium Car Rental",
   description: "Experience the thrill of the drive with our premium fleet.",
 };
 

@@ -63,33 +63,34 @@ export function CategorySection() {
                 <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <AnimatePresence>
                         {filteredCars.map((car) => (
-                            <motion.div
-                                layout
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ duration: 0.3 }}
-                                key={car.id}
-                                className="group relative aspect-[16/10] overflow-hidden bg-white/5 cursor-pointer"
-                            >
-                                <Image
-                                    src={car.image}
-                                    alt={car.name}
-                                    fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
+                            <Link href={`/fleet/${car.id}`} key={car.id}>
+                                <motion.div
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="group relative aspect-[16/10] overflow-hidden bg-white/5 cursor-pointer h-full"
+                                >
+                                    <Image
+                                        src={car.image}
+                                        alt={car.name}
+                                        fill
+                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
 
-                                <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-between items-end">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-white mb-1">{car.name}</h3>
-                                        <p className="text-primary font-bold">{car.price} CHF <span className="text-xs text-white/60 font-normal">/ Day</span></p>
+                                    <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-between items-end">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-white mb-1">{car.name}</h3>
+                                            <p className="text-primary font-bold">{car.price} CHF <span className="text-xs text-white/60 font-normal">/ Day</span></p>
+                                        </div>
+                                        <Button className="w-10 h-10 rounded-full bg-white/10 text-white hover:bg-primary hover:text-black p-0">
+                                            <ArrowUpRight className="w-5 h-5" />
+                                        </Button>
                                     </div>
-                                    <Button className="w-10 h-10 rounded-full bg-white/10 text-white hover:bg-primary hover:text-black p-0">
-                                        <ArrowUpRight className="w-5 h-5" />
-                                    </Button>
-                                </div>
-                            </motion.div>
+                                </motion.div>
+                            </Link>
                         ))}
                     </AnimatePresence>
                 </motion.div>

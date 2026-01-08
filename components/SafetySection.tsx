@@ -41,7 +41,7 @@ export function SafetySection() {
                         </div>
 
                         <Button variant="luxury" className="text-[#0c1315] mt-4 group">
-                            <Link href="/contact" className="flex items-center gap-2">
+                            <Link href="/book-now" className="flex items-center gap-2">
                                 Book Now <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                             </Link>
                         </Button>

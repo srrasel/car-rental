@@ -71,7 +71,7 @@ export function Navbar() {
                         className="px-6 tracking-widest uppercase text-xs font-bold transition-all duration-300"
                         asChild
                     >
-                        <Link href="/contact">
+                        <Link href="/book-now">
                             Book Now
                         </Link>
                     </Button>
@@ -133,7 +133,7 @@ export function Navbar() {
                                 ))}
                                 <div className="mt-8">
                                     <Button variant="luxury" className="w-full text-[#0c1315] py-6 text-sm" asChild>
-                                        <Link href="/contact">
+                                        <Link href="/book-now">
                                             Book a Ride
                                         </Link>
                                     </Button>

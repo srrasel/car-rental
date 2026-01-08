@@ -30,8 +30,10 @@ export function PromoSection() {
                     <p className="text-white/80 text-lg leading-relaxed">
                         Unlock the ultimate driving experience with our exclusive fleet. Whether for business or pleasure, we ensure every mile is memorable.
                     </p>
-                    <Button variant="luxury" className="w-full text-[#0c1315] py-8 text-lg">
-                        Explore Fleet
+                    <Button variant="luxury" className="w-full text-[#0c1315] py-8 text-lg" asChild>
+                        <Link href="/fleet">
+                            Explore Fleet
+                        </Link>
                     </Button>
                 </div>
             </div>

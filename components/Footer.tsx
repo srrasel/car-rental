@@ -33,10 +33,16 @@ export function Footer() {
                     <div>
                         <h3 className="text-white font-bold uppercase tracking-widest text-sm mb-6">Company</h3>
                         <ul className="space-y-4">
-                            {['About Us', 'Services', 'Our Fleet', 'Testimonials', 'Contact'].map((item) => (
-                                <li key={item}>
-                                    <Link href="#" className="text-[#a1a1a1] hover:text-primary transition-colors text-sm">
-                                        {item}
+                            {[
+                                { name: 'About Us', href: '/about' },
+                                { name: 'Services', href: '/services' },
+                                { name: 'Our Fleet', href: '/fleet' },
+                                { name: 'Testimonials', href: '/testimonials' },
+                                { name: 'Contact', href: '/contact' }
+                            ].map((item) => (
+                                <li key={item.name}>
+                                    <Link href={item.href} className="text-[#a1a1a1] hover:text-primary transition-colors text-sm">
+                                        {item.name}
                                     </Link>
                                 </li>
                             ))}
@@ -46,10 +52,16 @@ export function Footer() {
                     <div>
                         <h3 className="text-white font-bold uppercase tracking-widest text-sm mb-6">Vehicles</h3>
                         <ul className="space-y-4">
-                            {['Sports Cars', 'Luxury SUVs', 'Convertibles', 'Electric', 'Chauffeur Service'].map((item) => (
-                                <li key={item}>
-                                    <Link href="#" className="text-[#a1a1a1] hover:text-primary transition-colors text-sm">
-                                        {item}
+                            {[
+                                { name: 'Sports Cars', href: '/fleet?category=Sports' },
+                                { name: 'Luxury SUVs', href: '/fleet?category=SUV' },
+                                { name: 'Convertibles', href: '/fleet?category=Convertible' },
+                                { name: 'Electric', href: '/fleet?category=Electric' },
+                                { name: 'Chauffeur Service', href: '/services' }
+                            ].map((item) => (
+                                <li key={item.name}>
+                                    <Link href={item.href} className="text-[#a1a1a1] hover:text-primary transition-colors text-sm">
+                                        {item.name}
                                     </Link>
                                 </li>
                             ))}
@@ -65,18 +77,18 @@ export function Footer() {
                             </li>
                             <li className="flex items-center gap-3">
                                 <Phone className="w-5 h-5 text-primary shrink-0" />
-                                <span>+41 22 555 0199</span>
+                                <span>+41 22 555 1111</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="w-5 h-5 text-primary shrink-0" />
-                                <span>concierge@luxedrive.com</span>
+                                <span>concierge@rentago.com</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#a1a1a1/60] uppercase tracking-wider">
-                    <p>&copy; {new Date().getFullYear()} LuxeDrive. All rights reserved.</p>
+                <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#a1a1a1] uppercase tracking-wider">
+                    <p>&copy; {new Date().getFullYear()} Rentago. All rights reserved.</p>
                     <div className="flex gap-8">
                         <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
                         <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>

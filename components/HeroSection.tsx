@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Calendar, MapPin } from "lucide-react";
@@ -17,6 +18,18 @@ export function HeroSection() {
     ];
 
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+    const router = useRouter();
+    const [location, setLocation] = React.useState("");
+    const [pickupDate, setPickupDate] = React.useState("");
+    const [returnDate, setReturnDate] = React.useState("");
+
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+        if (location) params.set("location", location);
+        if (pickupDate) params.set("pickup", pickupDate);
+        if (returnDate) params.set("return", returnDate);
+        router.push(`/fleet?${params.toString()}`);
+    };
 
     React.useEffect(() => {
         const interval = setInterval(() => {
@@ -94,26 +107,50 @@ export function HeroSection() {
                         <div className="md:col-span-2 space-y-3">
                             <label className="text-xs uppercase tracking-widest text-[#a1a1a1]">Pick-up Location</label>
                             <div className="relative">
-                                <Input placeholder="City, Airport, or Address" className="bg-transparent border-b border-white/20 rounded-none px-0 py-2 focus-visible:ring-0 focus-visible:border-primary placeholder:text-white/40 text-white font-medium pl-8" />
-                                <MapPin className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+                                <Input 
+                                    list="locations" 
+                                    placeholder="Select Location" 
+                                    className="h-12 bg-white/5 border border-white/10 rounded-lg px-4 pl-10 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-white placeholder:text-white/40" 
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                />
+                                <datalist id="locations">
+                                    <option value="New York" />
+                                    <option value="Los Angeles" />
+                                    <option value="Miami" />
+                                    <option value="London" />
+                                    <option value="Dubai" />
+                                    <option value="Paris" />
+                                </datalist>
+                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
                             </div>
                         </div>
                         <div className="md:col-span-2 space-y-3">
                             <label className="text-xs uppercase tracking-widest text-[#a1a1a1]">Pick-up Date</label>
                             <div className="relative">
-                                <Input type="date" className="bg-transparent border-b border-white/20 rounded-none px-0 py-2 focus-visible:ring-0 focus-visible:border-primary text-white font-medium pl-8 [&::-webkit-calendar-picker-indicator]:invert" />
-                                <Calendar className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+                                <Input 
+                                    type="date" 
+                                    className="h-12 bg-white/5 border border-white/10 rounded-lg px-4 pl-10 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-white [&::-webkit-calendar-picker-indicator]:invert" 
+                                    value={pickupDate}
+                                    onChange={(e) => setPickupDate(e.target.value)}
+                                />
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
                             </div>
                         </div>
                         <div className="md:col-span-2 space-y-3">
                             <label className="text-xs uppercase tracking-widest text-[#a1a1a1]">Return Date</label>
                             <div className="relative">
-                                <Input type="date" className="bg-transparent border-b border-white/20 rounded-none px-0 py-2 focus-visible:ring-0 focus-visible:border-primary text-white font-medium pl-8 [&::-webkit-calendar-picker-indicator]:invert" />
-                                <Calendar className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+                                <Input 
+                                    type="date" 
+                                    className="h-12 bg-white/5 border border-white/10 rounded-lg px-4 pl-10 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-white [&::-webkit-calendar-picker-indicator]:invert" 
+                                    value={returnDate}
+                                    onChange={(e) => setReturnDate(e.target.value)}
+                                />
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
                             </div>
                         </div>
                         <div className="md:col-span-1">
-                            <Button variant="luxury" className="w-full h-12 text-[#0c1315]">
+                            <Button variant="luxury" className="w-full h-12 text-[#0c1315]" onClick={handleSearch}>
                                 <ChevronRight className="w-6 h-6" />
                             </Button>
                         </div>
