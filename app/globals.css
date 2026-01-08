@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+:root {
+  /* Default Light (Not main focus, but keeping for safety) */
+  --background: 0 0% 100%;
+  --foreground: 224 71% 4%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 224 71% 4%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71% 4%;
+
+  --primary: 34 38% 64%;
+  /* #c9a37e converted to HSL roughly 34 38% 64% */
+  --primary-foreground: 224 71% 4%;
+
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 220 14.3% 10%;
+
+  --muted: 220 14.3% 95.9%;
+  --muted-foreground: 220 8.9% 46.1%;
+
+  --accent: 34 38% 64%;
+  --accent-foreground: 224 71% 4%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 20% 98%;
+
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 34 38% 64%;
+
+  --radius: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 198 27% 6%;
+    /* #0c1315 - Deep Charcoal/Black */
+    --foreground: 0 0% 100%;
+
+    --card: 198 25% 9%;
+    /* Slightly lighter than bg */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 198 25% 9%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 34 38% 64%;
+    /* #c9a37e - Luxe Gold */
+    --primary-foreground: 0 0% 0%;
+    /* Black text on gold */
+
+    --secondary: 198 20% 15%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 198 20% 20%;
+    --muted-foreground: 215 15% 65%;
+    /* #a1a1a1 */
+
+    --accent: 34 38% 64%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 198 20% 20%;
+    --input: 198 20% 20%;
+    --ring: 34 38% 64%;
+  }
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+
+  --font-inconsolata: var(--font-inconsolata);
+  --font-sora: var(--font-sora);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sora), sans-serif;
+  @apply antialiased selection:bg-primary selection:text-primary-foreground;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-inconsolata), monospace;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+
+.text-gold {
+  color: hsl(var(--primary));
+}
