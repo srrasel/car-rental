@@ -27,7 +27,7 @@ export function HeroSection() {
     }, [heroImages.length]);
 
     return (
-        <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
+        <section className="relative h-screen min-h-[900px] md:min-h-[700px] flex items-center justify-center overflow-hidden">
             {/* Background with overlay */}
             <div className="absolute inset-0 z-0 bg-[#0c1315]">
                 <div className="absolute inset-0 bg-black/40 z-10" />
