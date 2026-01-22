@@ -17,19 +17,63 @@ import {
     Phone,
     Mail,
     ChevronRight,
-    Check
+    Check,
+    Car
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { allCars } from "@/lib/data";
+import Image from "next/image";
 
 export default function BookingPage() {
     const [dateRange, setDateRange] = useState({ start: "", end: "" });
     const [extraKm, setExtraKm] = useState("0");
+    const [selectedCar, setSelectedCar] = useState<typeof allCars[0] | null>(null);
+    const [totalPrice, setTotalPrice] = useState(0);
+    const [days, setDays] = useState(0);
+
+    // Calculate days
+    useEffect(() => {
+        if (dateRange.start && dateRange.end) {
+            const start = new Date(dateRange.start);
+            const end = new Date(dateRange.end);
+            
+            // Validate dates
+            if (end < start) {
+                setDays(0);
+                return;
+            }
+
+            const diffTime = Math.abs(end.getTime() - start.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Minimum 1 day usually, but let's stick to standard diff
+            // If same day, count as 1 day
+            const calculatedDays = diffDays === 0 ? 1 : diffDays + 1; // Include start day
+            
+            setDays(calculatedDays);
+        } else {
+            setDays(0);
+        }
+    }, [dateRange]);
+
+    // Calculate total price
+    useEffect(() => {
+        if (selectedCar && days > 0) {
+            let price = selectedCar.price * days;
+            
+            // Add extra km price
+            if (extraKm === "50") price += 17.50;
+            if (extraKm === "100") price += 35.00;
+
+            setTotalPrice(price);
+        } else {
+            setTotalPrice(0);
+        }
+    }, [selectedCar, days, extraKm]);
 
     // Animation variants
     const containerVariants = {
@@ -97,6 +141,56 @@ export default function BookingPage() {
                         
                         {/* Left Column: Form */}
                         <div className="lg:col-span-8 space-y-8">
+
+                            {/* Véhicule Selection */}
+                            <motion.div variants={itemVariants} className="group relative">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 blur-sm" />
+                                <div className="relative bg-[#13181a]/80 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-xl">
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20 text-primary shadow-lg shadow-primary/10">
+                                            <Car className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-white">Véhicule</h2>
+                                            <p className="text-sm text-white/50">Sélectionnez votre véhicule</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {allCars.map((car) => (
+                                            <div 
+                                                key={car.id}
+                                                onClick={() => setSelectedCar(car)}
+                                                className={cn(
+                                                    "relative rounded-xl border p-4 cursor-pointer transition-all duration-300 group/car overflow-hidden",
+                                                    selectedCar?.id === car.id 
+                                                        ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary-rgb),0.2)]" 
+                                                        : "border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10"
+                                                )}
+                                            >
+                                                <div className="aspect-video relative mb-4 rounded-lg overflow-hidden bg-black/20">
+                                                    <Image 
+                                                        src={car.image} 
+                                                        alt={car.name}
+                                                        fill
+                                                        className="object-cover group-hover/car:scale-110 transition-transform duration-500"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <h3 className="font-bold text-white text-sm line-clamp-1">{car.name}</h3>
+                                                    <p className="text-xs text-white/60">{car.category}</p>
+                                                    <p className="text-primary font-bold text-sm mt-2">{car.price} CHF <span className="text-xs font-normal text-white/50">/jour</span></p>
+                                                </div>
+                                                {selectedCar?.id === car.id && (
+                                                    <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                                                        <Check className="w-3 h-3 text-black" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </motion.div>
                             
                             {/* Dates de location */}
                             <motion.div variants={itemVariants} className="group relative">
@@ -116,14 +210,24 @@ export default function BookingPage() {
                                         <div className="space-y-3">
                                             <Label className="text-xs font-bold text-primary/80 uppercase tracking-wider ml-1">Départ</Label>
                                             <div className="relative group/input">
-                                                <Input type="date" className="bg-white/5 border-white/10 text-white h-14 px-4 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300" />
+                                                <Input 
+                                                    type="date" 
+                                                    value={dateRange.start}
+                                                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                                    className="bg-white/5 border-white/10 text-white h-14 px-4 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300" 
+                                                />
                                                 <div className="absolute inset-0 rounded-xl bg-primary/5 opacity-0 group-hover/input:opacity-100 transition-opacity pointer-events-none" />
                                             </div>
                                         </div>
                                         <div className="space-y-3">
                                             <Label className="text-xs font-bold text-primary/80 uppercase tracking-wider ml-1">Retour</Label>
                                             <div className="relative group/input">
-                                                <Input type="date" className="bg-white/5 border-white/10 text-white h-14 px-4 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300" />
+                                                <Input 
+                                                    type="date" 
+                                                    value={dateRange.end}
+                                                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                                    className="bg-white/5 border-white/10 text-white h-14 px-4 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300" 
+                                                />
                                                 <div className="absolute inset-0 rounded-xl bg-primary/5 opacity-0 group-hover/input:opacity-100 transition-opacity pointer-events-none" />
                                             </div>
                                         </div>
@@ -132,7 +236,7 @@ export default function BookingPage() {
                                     <div className="mt-6 flex items-start gap-3 text-sm text-white/60 bg-white/5 p-4 rounded-xl border border-white/5">
                                         <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                                         <div className="space-y-1">
-                                            <p className="font-medium text-white">Conditions de réservation</p>
+                                            <p className="font-medium text-white">Durée du séjour: {days > 0 ? `${days} jour${days > 1 ? 's' : ''}` : "Sélectionnez vos dates"}</p>
                                             <p>Minimum 2 jours de location. Les dates indisponibles sont grisées.</p>
                                         </div>
                                     </div>
@@ -166,7 +270,11 @@ export default function BookingPage() {
 
                                         <div className="space-y-4">
                                             <Label className="text-sm font-medium text-white/80 ml-1">Ajouter des km supplémentaires</Label>
-                                            <RadioGroup defaultValue="0" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            <RadioGroup 
+                                                value={extraKm} 
+                                                onValueChange={setExtraKm}
+                                                className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                                            >
                                                 {[
                                                     { value: "0", label: "Aucun", price: "Inclus" },
                                                     { value: "50", label: "+50 km", price: "+17.50 CHF" },
@@ -313,12 +421,43 @@ export default function BookingPage() {
                                             <Shield className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-bold text-white">Paiement</h2>
-                                            <p className="text-sm text-white/50">100% Sécurisé</p>
+                                            <h2 className="text-xl font-bold text-white">Récapitulatif</h2>
+                                            <p className="text-sm text-white/50">Votre sélection</p>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-6 mb-8">
+                                    <div className="space-y-4 mb-8">
+                                        {/* Selected Car Summary */}
+                                        <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                                            {selectedCar ? (
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-12 h-8 relative rounded overflow-hidden">
+                                                        <Image src={selectedCar.image} alt={selectedCar.name} fill className="object-cover" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-white">{selectedCar.name}</p>
+                                                        <p className="text-xs text-white/60">{selectedCar.price} CHF / jour</p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-white/50 italic">Aucun véhicule sélectionné</p>
+                                            )}
+                                        </div>
+
+                                        {/* Dates Summary */}
+                                        <div className="bg-white/5 p-4 rounded-xl border border-white/5 space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-white/60">Durée</span>
+                                                <span className="text-white font-medium">{days} jours</span>
+                                            </div>
+                                            {extraKm !== "0" && (
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-white/60">Km extra</span>
+                                                    <span className="text-white font-medium">+{extraKm} km</span>
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <div className="flex items-start gap-3 text-sm text-white/80">
                                             <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 mt-0.5">
                                                 <Check className="w-3 h-3 text-emerald-500" />
@@ -331,21 +470,18 @@ export default function BookingPage() {
                                             </div>
                                             <span className="leading-tight">Contrat généré automatiquement</span>
                                         </div>
-                                        <div className="flex items-start gap-3 text-sm text-white/80">
-                                            <div className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                                                <Check className="w-3 h-3 text-emerald-500" />
-                                            </div>
-                                            <span className="leading-tight">Aucun frais caché</span>
-                                        </div>
                                     </div>
 
                                     <div className="pt-6 border-t border-white/10 space-y-4">
                                         <div className="flex justify-between items-end mb-4">
                                             <span className="text-white/60">Total estimé</span>
-                                            <span className="text-2xl font-bold text-white">--- CHF</span>
+                                            <span className="text-2xl font-bold text-white">{totalPrice.toFixed(2)} CHF</span>
                                         </div>
                                         
-                                        <Button className="w-full h-14 text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-primary/20 rounded-xl group">
+                                        <Button 
+                                            disabled={!selectedCar || days <= 0}
+                                            className="w-full h-14 text-base font-bold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary hover:scale-[1.02] transition-all duration-300 shadow-lg shadow-primary/20 rounded-xl group disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
                                             <span>Payer & Réserver</span>
                                             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                                         </Button>
