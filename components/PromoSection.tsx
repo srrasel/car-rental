@@ -21,7 +21,7 @@ export function PromoSection() {
                         </div>
                         <div>
                             <div className="text-5xl font-bold text-white mb-2">157<span className="text-primary">k</span></div>
-                            <div className="text-sm uppercase tracking-widest text-white/60">Happy <br />Clients</div>
+                            <div className="text-sm uppercase tracking-widest text-white/60">Happy <br />Customers</div>
                         </div>
                     </div>
                 </div>

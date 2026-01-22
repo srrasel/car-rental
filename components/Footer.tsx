@@ -73,15 +73,15 @@ export function Footer() {
                         <ul className="space-y-4 text-sm text-[#a1a1a1]">
                             <li className="flex items-start gap-3">
                                 <MapPin className="w-5 h-5 text-primary shrink-0" />
-                                <span>1234 Luxury Lane, Prestige City, Switzerland</span>
+                                <span>Lausanne, Suisse</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Phone className="w-5 h-5 text-primary shrink-0" />
-                                <span>+41 22 555 1111</span>
+                                <span>+41 xx xxx xx xx</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="w-5 h-5 text-primary shrink-0" />
-                                <span>concierge@rentago.com</span>
+                                <span>contact@rentago.ch</span>
                             </li>
                         </ul>
                     </div>

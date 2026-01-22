@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Calendar, MapPin } from "lucide-react";
+import { ChevronRight, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export function HeroSection() {
@@ -19,15 +19,14 @@ export function HeroSection() {
 
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
     const router = useRouter();
-    const [location, setLocation] = React.useState("");
     const [pickupDate, setPickupDate] = React.useState("");
     const [returnDate, setReturnDate] = React.useState("");
 
     const handleSearch = () => {
         const params = new URLSearchParams();
-        if (location) params.set("location", location);
         if (pickupDate) params.set("pickup", pickupDate);
         if (returnDate) params.set("return", returnDate);
+        // Redirect to fleet or specific car page. Since we have one car, maybe fleet is fine.
         router.push(`/fleet?${params.toString()}`);
     };
 
@@ -78,19 +77,19 @@ export function HeroSection() {
                     className="max-w-4xl space-y-6 min-h-[40vh] md:min-h-0 flex flex-col justify-center"
                 >
                     <div className="inline-block px-3 py-1 text-primary text-sm font-bold tracking-[0.2em] uppercase mb-4 border-l-2 border-primary pl-4">
-                        Premium Car Rental Service
+                        Location de voitures à Lausanne
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-normal tracking-[0.2em] leading-[1.2em] text-white" style={{ fontFamily: 'var(--font-epilogue)' }}>
-                        RIDE TO DESTINATIONS <br /> WITH MAXIMUM <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#e5cca8]">COMFORT</span>
+                    <h1 className="text-3xl md:text-5xl font-normal tracking-[0.05em] leading-[1.2em] text-white" style={{ fontFamily: 'var(--font-epilogue)' }}>
+                        LOUEZ VOTRE VOITURE À <br /> LAUSANNE EN <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#e5cca8]">QUELQUES CLICS</span>
                     </h1>
-                    <p className="text-xl text-[#a1a1a1] max-w-xl font-light tracking-wide">
-                        Experience the thrill of the open road with our curated fleet of luxury and sports vehicles.
+                    <p className="text-xl text-[#a1a1a1] max-w-xl font-light tracking-wide leading-relaxed">
+                        Avec Rentago.ch, réservez votre véhicule rapidement et en toute simplicité. Choisissez vos dates, sélectionnez vos kilomètres, payez en ligne et recevez automatiquement votre contrat.
                     </p>
 
                     {/* Mobile Only CTA */}
                     <div className="md:hidden pt-4">
                         <Button variant="luxury" onClick={scrollToBooking} className="w-full max-w-xs text-[#0c1315]">
-                            Book Now
+                            Réserver maintenant
                         </Button>
                     </div>
                 </motion.div>
@@ -104,29 +103,8 @@ export function HeroSection() {
                     className="w-full max-w-5xl bg-[#0c1315] md:bg-[#0c1315]/90 md:backdrop-blur-md border border-white/10 md:border-white/5 p-6 md:p-8 shadow-2xl mt-0 md:mt-0 z-30"
                 >
                     <div className="grid grid-cols-1 md:grid-cols-7 gap-6 items-end">
-                        <div className="md:col-span-2 space-y-3">
-                            <label className="text-xs uppercase tracking-widest text-[#a1a1a1]">Pick-up Location</label>
-                            <div className="relative">
-                                <Input 
-                                    list="locations" 
-                                    placeholder="Select Location" 
-                                    className="h-12 bg-white/5 border border-white/10 rounded-lg px-4 pl-10 focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-white placeholder:text-white/40" 
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                />
-                                <datalist id="locations">
-                                    <option value="New York" />
-                                    <option value="Los Angeles" />
-                                    <option value="Miami" />
-                                    <option value="London" />
-                                    <option value="Dubai" />
-                                    <option value="Paris" />
-                                </datalist>
-                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
-                            </div>
-                        </div>
-                        <div className="md:col-span-2 space-y-3">
-                            <label className="text-xs uppercase tracking-widest text-[#a1a1a1]">Pick-up Date</label>
+                        <div className="md:col-span-3 space-y-3">
+                            <label className="text-xs uppercase tracking-widest text-[#a1a1a1]">Date de départ</label>
                             <div className="relative">
                                 <Input 
                                     type="date" 
@@ -137,8 +115,8 @@ export function HeroSection() {
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
                             </div>
                         </div>
-                        <div className="md:col-span-2 space-y-3">
-                            <label className="text-xs uppercase tracking-widest text-[#a1a1a1]">Return Date</label>
+                        <div className="md:col-span-3 space-y-3">
+                            <label className="text-xs uppercase tracking-widest text-[#a1a1a1]">Date de retour</label>
                             <div className="relative">
                                 <Input 
                                     type="date" 
@@ -150,7 +128,7 @@ export function HeroSection() {
                             </div>
                         </div>
                         <div className="md:col-span-1">
-                            <Button variant="luxury" className="w-full h-12 text-[#0c1315]" onClick={handleSearch}>
+                            <Button variant="luxury" className="w-full h-12 text-[#0c1315] font-bold" onClick={handleSearch}>
                                 <ChevronRight className="w-6 h-6" />
                             </Button>
                         </div>

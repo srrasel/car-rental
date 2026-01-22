@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inconsolata, Sora, Epilogue } from "next/font/google"; // Added Inconsolata, Sora, Epilogue
+import { AuthProvider } from "@/components/providers/SessionProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -47,7 +48,9 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} ${inconsolata.variable} ${sora.variable} ${epilogue.variable} antialiased bg-background text-foreground`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

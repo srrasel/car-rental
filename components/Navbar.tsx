@@ -4,10 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X } from "lucide-react";
+import { Car, Menu, X, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession, signOut } from "next-auth/react";
 
 const navLinks = [
     { name: "Home", href: "/" },
@@ -17,6 +18,7 @@ const navLinks = [
 ];
 
 export function Navbar() {
+    const { data: session } = useSession();
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
@@ -65,6 +67,33 @@ export function Navbar() {
                                 {link.name}
                             </Link>
                         ))}
+                        {session ? (
+                            <div className="flex items-center gap-4">
+                                <Link
+                                    href={session.user.role === 'admin' ? '/admin' : '/dashboard'}
+                                    className="text-sm font-medium transition-colors text-white/80 hover:text-primary relative py-1 uppercase tracking-widest flex items-center gap-2"
+                                    style={{ fontFamily: 'var(--font-sora)' }}
+                                >
+                                    <User className="w-4 h-4" />
+                                    {session.user.name?.split(' ')[0]}
+                                </Link>
+                                <button
+                                    onClick={() => signOut()}
+                                    className="text-sm font-medium transition-colors text-white/80 hover:text-primary relative py-1 uppercase tracking-widest"
+                                    style={{ fontFamily: 'var(--font-sora)' }}
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
+                        ) : (
+                            <Link
+                                href="/login"
+                                className="text-sm font-medium transition-colors text-white/80 hover:text-primary relative py-1 uppercase tracking-widest"
+                                style={{ fontFamily: 'var(--font-sora)' }}
+                            >
+                                Sign In
+                            </Link>
+                        )}
                     </div>
                     <Button
                         variant="luxury"
@@ -131,6 +160,14 @@ export function Navbar() {
                                         {link.name}
                                     </Link>
                                 ))}
+                                <Link
+                                    href="/login"
+                                    className="text-lg font-medium text-white hover:text-primary transition-colors uppercase tracking-wider py-4 border-b border-white/5"
+                                    onClick={() => setIsOpen(false)}
+                                    style={{ fontFamily: 'var(--font-epilogue)' }}
+                                >
+                                    Sign In
+                                </Link>
                                 <div className="mt-8">
                                     <Button variant="luxury" className="w-full text-[#0c1315] py-6 text-sm" asChild>
                                         <Link href="/book-now">

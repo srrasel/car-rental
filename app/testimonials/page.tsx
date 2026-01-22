@@ -87,10 +87,10 @@ export default function TestimonialsPage() {
                         transition={{ duration: 0.6 }}
                     >
                         <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight" style={{ fontFamily: 'var(--font-epilogue)' }}>
-                            CLIENT <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#ffcea0]">STORIES</span>
+                            CUSTOMER <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#ffcea0]">STORIES</span>
                         </h1>
                         <p className="text-[#a1a1a1] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-light">
-                            Discover why hundreds of clients trust us for their luxury transportation needs. Read their genuine experiences.
+                            Discover why hundreds of customers trust us for their luxury transportation needs. Read their genuine experiences.
                         </p>
                     </motion.div>
                 </div>

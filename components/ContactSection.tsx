@@ -13,7 +13,7 @@ export function ContactSection() {
                     {/* Map Integration */}
                     <div className="relative min-h-[400px] lg:h-full bg-white/5 overflow-hidden group border border-white/10">
                         <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.15830869428!2d-74.119763973046!3d40.69766374874431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1650000000000!5m2!1sen!2s"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d43929.56396472455!2d6.586664984252632!3d46.52857317789726!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478c293ecd89a7e5%3A0x81f9a0d8d0354163!2sLausanne%2C%20Switzerland!5e0!3m2!1sen!2s!4v1650000000000!5m2!1sen!2s"
                             className="absolute inset-0 w-full h-full grayscale hover:grayscale-0 transition-all duration-700 opacity-80 hover:opacity-100"
                             style={{ border: 0 }}
                             allowFullScreen={true}
@@ -26,11 +26,14 @@ export function ContactSection() {
                     <div className="space-y-12">
                         <div className="space-y-4">
                             <div className="inline-block px-3 py-1 text-primary text-xs font-bold tracking-[0.2em] uppercase border-l-2 border-primary pl-4">
-                                Get In Touch
+                                Contact & Assistance
                             </div>
                             <h2 className="text-4xl md:text-5xl font-normal text-white tracking-tight" style={{ fontFamily: 'var(--font-epilogue)' }}>
-                                LOCATION AND <span className="text-primary">CONTACT</span>
+                                NOUS <span className="text-primary">CONTACTER</span>
                             </h2>
+                            <p className="text-[#a1a1a1]">
+                                Pour toute question sur la location ou la réservation, vous pouvez nous contacter directement.
+                            </p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -40,8 +43,8 @@ export function ContactSection() {
                                         <MapPin className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h4 className="text-white font-bold uppercase tracking-wide mb-1">Address</h4>
-                                        <p className="text-[#a1a1a1] text-sm">1234 Luxury Lane, New York, NY 10001, USA</p>
+                                        <h4 className="text-white font-bold uppercase tracking-wide mb-1">Localisation</h4>
+                                        <p className="text-[#a1a1a1] text-sm">Lausanne, Suisse</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4">
@@ -49,8 +52,8 @@ export function ContactSection() {
                                         <Phone className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h4 className="text-white font-bold uppercase tracking-wide mb-1">Phone</h4>
-                                        <p className="text-[#a1a1a1] text-sm">+41 22 555 0199</p>
+                                        <h4 className="text-white font-bold uppercase tracking-wide mb-1">Téléphone</h4>
+                                        <p className="text-[#a1a1a1] text-sm">+41 xx xxx xx xx</p>
                                     </div>
                                 </div>
                             </div>
@@ -61,7 +64,7 @@ export function ContactSection() {
                                     </div>
                                     <div>
                                         <h4 className="text-white font-bold uppercase tracking-wide mb-1">Email</h4>
-                                        <p className="text-[#a1a1a1] text-sm">concierge@luxedrive.com</p>
+                                        <p className="text-[#a1a1a1] text-sm">contact@rentago.ch</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4">
@@ -69,8 +72,8 @@ export function ContactSection() {
                                         <Clock className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h4 className="text-white font-bold uppercase tracking-wide mb-1">Working Hours</h4>
-                                        <p className="text-[#a1a1a1] text-sm">Mon-Sat: 09:00 - 20:00</p>
+                                        <h4 className="text-white font-bold uppercase tracking-wide mb-1">Horaires</h4>
+                                        <p className="text-[#a1a1a1] text-sm">9h00 – 20h00, 7/7</p>
                                     </div>
                                 </div>
                             </div>
