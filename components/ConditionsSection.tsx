@@ -55,15 +55,7 @@ export function ConditionsSection() {
                             className="w-full md:w-auto text-[#0c1315] font-bold px-12 py-6 text-lg"
                             asChild
                         >
-                            {/* Scroll to top or specific booking area, or fleet page if we had a specific booking flow. 
-                                Since user wants "Réserver maintenant" on Home, and Home has the booking widget in Hero,
-                                maybe scroll to Hero or go to a booking page.
-                                I'll link to /fleet/golf-7-r (which doesn't exist yet but I should probably make the hero booking widget work or link to fleet).
-                                Actually, the user says "Louez votre voiture à Lausanne en quelques clics...". 
-                                The hero booking widget should probably just redirect to a checkout or fleet page.
-                                I'll set it to scroll to top for now or just Link to a booking section.
-                            */}
-                            <Link href="#booking-widget">
+                            <Link href="/book-now">
                                 Réserver maintenant
                             </Link>
                         </Button>

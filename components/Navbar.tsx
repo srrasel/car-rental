@@ -11,10 +11,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
 
 const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Fleet", href: "/fleet" },
-    { name: "Services", href: "/services" },
-    { name: "Contact", href: "/contact" },
+    { name: "HOME", href: "/" },
+    { name: "TYPE DE VÉHICULE", href: "/type-de-vehicule" },
+    { name: "CONTACT", href: "/contact" },
 ];
 
 export function Navbar() {
@@ -82,7 +81,7 @@ export function Navbar() {
                                     className="text-sm font-medium transition-colors text-white/80 hover:text-primary relative py-1 uppercase tracking-widest"
                                     style={{ fontFamily: 'var(--font-sora)' }}
                                 >
-                                    Sign Out
+                                    SIGN OUT
                                 </button>
                             </div>
                         ) : (
@@ -91,7 +90,7 @@ export function Navbar() {
                                 className="text-sm font-medium transition-colors text-white/80 hover:text-primary relative py-1 uppercase tracking-widest"
                                 style={{ fontFamily: 'var(--font-sora)' }}
                             >
-                                Sign In
+                                SIGN IN
                             </Link>
                         )}
                     </div>
@@ -101,7 +100,7 @@ export function Navbar() {
                         asChild
                     >
                         <Link href="/book-now">
-                            Book Now
+                            Réserver maintenant
                         </Link>
                     </Button>
                 </div>
@@ -166,12 +165,12 @@ export function Navbar() {
                                     onClick={() => setIsOpen(false)}
                                     style={{ fontFamily: 'var(--font-epilogue)' }}
                                 >
-                                    Sign In
+                                    SIGN IN
                                 </Link>
                                 <div className="mt-8">
                                     <Button variant="luxury" className="w-full text-[#0c1315] py-6 text-sm" asChild>
                                         <Link href="/book-now">
-                                            Book a Ride
+                                            Réserver maintenant
                                         </Link>
                                     </Button>
                                 </div>

@@ -110,8 +110,8 @@ export default function ServicesPage() {
                                 <p className="text-[#a1a1a1] leading-relaxed mb-6 text-lg">
                                     {service.description}
                                 </p>
-                                <Link href="/contact" className="inline-flex items-center gap-2 text-primary font-bold tracking-wide uppercase text-sm hover:text-white transition-colors group/link">
-                                    Book Now <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
+                                <Link href="/book-now" className="inline-flex items-center gap-2 text-primary font-bold tracking-wide uppercase text-sm hover:text-white transition-colors group/link">
+                                    Réserver maintenant <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                                 </Link>
                             </CardContent>
                         </Card>

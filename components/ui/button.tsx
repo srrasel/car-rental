@@ -1,5 +1,5 @@
 import * as React from "react"
-// import { Slot } from "@radix-ui/react-slot" // Commented out or removed
+import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
@@ -43,19 +43,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant, size, asChild = false, ...props }, ref) => {
-        // We don't have @radix-ui/react-slot installed explicitly in the command I ran, 
-        // but usually user might expect it or I should have installed it. 
-        // To be safe, I'll implement a simple version if Slot is not available, 
-        // BUT standard shadcn relies on it. 
-        // I will assume for now I should have installed it. 
-        // Wait, I missed installing @radix-ui/react-slot. 
-        // I should fix that in the next step. 
-        // For now I will use "button" as default and comment out Slot part or fix imports later.
-        // Actually, I can use a simpler implementation for now to avoid errors if the package is missing.
-        // I'll stick to standard HTML button for now and update later if needed.
-
-        // REVISION: I will use 'button' for now to be safe as I didn't install radix slot.
-        const Comp = "button"
+        const Comp = asChild ? Slot : "button"
         return (
             <Comp
                 className={cn(buttonVariants({ variant, size, className }))}

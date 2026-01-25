@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Calendar } from "lucide-react";
@@ -26,8 +27,8 @@ export function HeroSection() {
         const params = new URLSearchParams();
         if (pickupDate) params.set("pickup", pickupDate);
         if (returnDate) params.set("return", returnDate);
-        // Redirect to fleet or specific car page. Since we have one car, maybe fleet is fine.
-        router.push(`/fleet?${params.toString()}`);
+        // Redirect to book-now page directly
+        router.push(`/book-now?${params.toString()}`);
     };
 
     React.useEffect(() => {
@@ -88,8 +89,10 @@ export function HeroSection() {
 
                     {/* Mobile Only CTA */}
                     <div className="md:hidden pt-4">
-                        <Button variant="luxury" onClick={scrollToBooking} className="w-full max-w-xs text-[#0c1315]">
-                            Réserver maintenant
+                        <Button variant="luxury" asChild className="w-full max-w-xs text-[#0c1315]">
+                            <Link href="/book-now">
+                                Réserver maintenant
+                            </Link>
                         </Button>
                     </div>
                 </motion.div>

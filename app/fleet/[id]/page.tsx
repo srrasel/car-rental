@@ -344,9 +344,11 @@ export default function CarDetailPage() {
 
                                         <Button 
                                             className="w-full mt-6 bg-primary text-black hover:bg-white hover:text-black font-bold h-12 text-base"
-                                            disabled={!isDateValid || totalPrice === 0}
+                                            asChild
                                         >
-                                            Réserver maintenant
+                                            <Link href="/book-now">
+                                                Réserver maintenant
+                                            </Link>
                                         </Button>
                                         
                                         <p className="text-center text-[10px] text-muted-foreground mt-3">
