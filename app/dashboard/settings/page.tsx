@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Shield, Moon, Globe, ChevronRight, LogOut, Trash2 } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 export default function SettingsPage() {
   return (
@@ -132,7 +133,10 @@ export default function SettingsPage() {
                     <p className="text-white font-medium">Log Out</p>
                     <p className="text-sm text-[#9da6b9]">Sign out of your account on all devices.</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-[#0c1315] border border-white/10 hover:border-white/30 text-white rounded-lg transition-colors">
+                <button 
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#0c1315] border border-white/10 hover:border-white/30 text-white rounded-lg transition-colors"
+                >
                     <LogOut className="w-4 h-4" />
                     Log Out
                 </button>

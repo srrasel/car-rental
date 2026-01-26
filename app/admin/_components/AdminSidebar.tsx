@@ -15,6 +15,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
@@ -99,13 +100,13 @@ export default function AdminSidebar() {
             <span className="text-sm font-medium">Settings</span>
           </Link>
 
-          <Link
-            href="#"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[#9da6b9] hover:bg-white/5 hover:text-white transition-colors"
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[#9da6b9] hover:bg-white/5 hover:text-white transition-colors w-full text-left"
           >
             <LogOut className="w-5 h-5" />
             <span className="text-sm font-medium">Sign Out</span>
-          </Link>
+          </button>
         </div>
       </div>
 

@@ -11,6 +11,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
@@ -95,7 +96,7 @@ export default function DashboardSidebar() {
               alex.m@example.com
             </p>
           </div>
-          <button className="ml-auto text-[#9da6b9] hover:text-white transition-colors">
+          <button className="ml-auto text-[#9da6b9] hover:text-white transition-colors" onClick={() => signOut({ callbackUrl: '/login' })}>
             <LogOut className="w-5 h-5" />
           </button>
         </div>

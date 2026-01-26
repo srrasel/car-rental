@@ -77,7 +77,7 @@ export function Navbar() {
                                     {session.user.name?.split(' ')[0]}
                                 </Link>
                                 <button
-                                    onClick={() => signOut()}
+                                    onClick={() => signOut({ callbackUrl: '/login' })}
                                     className="text-sm font-medium transition-colors text-white/80 hover:text-primary relative py-1 uppercase tracking-widest"
                                     style={{ fontFamily: 'var(--font-sora)' }}
                                 >
