@@ -58,7 +58,7 @@ AUTH_SECRET=your-secure-random-secret-here
 ```
 
 ### 3. Deploy
-Vercel will automatically detect it's a Next.js project and deploy it. The `vercel.json` configuration is already set up for Auth.js v5.
+Vercel will automatically detect it's a Next.js project and deploy it. No additional configuration files are needed.
 
 ## Learn More
 
