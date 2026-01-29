@@ -83,7 +83,7 @@ export default function RegisterPage() {
           </div>
           
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>© 2024 LuxeDrive. All rights reserved.</span>
+            <span>© 2026 Rentago. All rights reserved.</span>
           </div>
         </div>
       </div>

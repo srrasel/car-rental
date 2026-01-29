@@ -116,17 +116,50 @@ export default function TypeDeVehiculePage() {
                 >
                     {/* Main Info Card */}
                     <motion.div variants={itemVariants} className="lg:col-span-2 space-y-8">
-                        {/* Description */}
-                        <div className="bg-[#1a1f21]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl">
-                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <Info className="text-primary" />
-                                Description
-                            </h2>
-                            <p className="text-gray-300 leading-relaxed text-lg">
-                                La Golf 7 R est une berline sportive haut de gamme, parfaite pour les trajets urbains comme les longues distances.
-                                Elle combine puissance, sécurité et confort avec une finition exceptionnelle.
-                                Que ce soit pour une escapade le week-end ou un déplacement professionnel, elle saura répondre à toutes vos attentes.
-                            </p>
+                        {/* Description & Modern Image */}
+                        <div className="space-y-6 pt-12">
+                             {/* Modern Image Card */}
+                            <div className="relative rounded-3xl overflow-hidden p-[1px] shadow-2xl shadow-primary/10 group">
+                                <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_0_340deg,#c9a37e_360deg)] animate-border-rotate opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                <div className="absolute inset-0 bg-white/5 blur-3xl -z-10" />
+                                
+                                <div className="relative rounded-3xl overflow-hidden aspect-video bg-[#1a1f21]">
+                                    <Image
+                                        src="/assets/1.jpg"
+                                        alt="Volkswagen Golf 7 R Modern View"
+                                        fill
+                                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                        priority
+                                    />
+                                    {/* Overlay Gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0c1315] via-transparent to-transparent opacity-60" />
+                                    
+                                    {/* Floating Badge */}
+                                    <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl flex items-center justify-between">
+                                        <div>
+                                            <p className="text-xs text-gray-300 uppercase font-bold">Modèle 2014</p>
+                                            <p className="text-white font-semibold">Finition Sport R</p>
+                                        </div>
+                                        <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                                            <Zap className="w-5 h-5 text-primary" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Description Box */}
+                            <div className="bg-[#1a1f21]/80 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl relative z-10">
+                                <h2 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                    <Info className="text-primary" />
+                                    Description
+                                </h2>
+                                <p className="text-gray-300 leading-relaxed text-lg">
+                                    La Golf 7 R est une berline sportive haut de gamme, parfaite pour les trajets urbains comme les longues distances.
+                                    Elle combine puissance, sécurité et confort avec une finition exceptionnelle.
+                                    Que ce soit pour une escapade le week-end ou un déplacement professionnel, elle saura répondre à toutes vos attentes.
+                                </p>
+                            </div>
+
+                           
                         </div>
 
                         {/* Tech Specs Grid */}
@@ -148,7 +181,7 @@ export default function TypeDeVehiculePage() {
                     </motion.div>
 
                     {/* Sidebar / Secondary Info */}
-                    <motion.div variants={itemVariants} className="space-y-6">
+                    <motion.div variants={itemVariants} className="space-y-6 pt-12">
                         {/* Mileage */}
                         <div className="bg-[#1a1f21]/80 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-xl hover:border-primary/30 transition-colors">
                             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">

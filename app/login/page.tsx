@@ -55,6 +55,7 @@ export default function LoginPage() {
         
         <div className="relative z-10 flex flex-col justify-between h-full p-12 text-white">
           <div className="w-48">
+            <Link href="/" className="block">
              <Image
                 src="/logo/logo2.png"
                 alt="LuxeDrive"
@@ -62,6 +63,7 @@ export default function LoginPage() {
                 height={80}
                 className="w-full h-auto object-contain"
             />
+            </Link>
           </div>
           
           <div className="space-y-6 max-w-lg">
@@ -74,7 +76,7 @@ export default function LoginPage() {
           </div>
           
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>© 2024 LuxeDrive. All rights reserved.</span>
+            <span>© 2026 Rentago. All rights reserved.</span>
           </div>
         </div>
       </div>

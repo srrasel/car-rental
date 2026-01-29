@@ -57,27 +57,30 @@ export function VehicleOneSection() {
                             initial={{ opacity: 0, x: 30 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8 }}
-                            className="bg-[#1a1f21] p-8 rounded-2xl border border-white/5"
+                            className="relative rounded-2xl overflow-hidden p-[1px]"
                         >
-                            <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                                <Zap className="text-primary w-6 h-6" /> Points forts
-                            </h3>
-                            <ul className="space-y-4">
-                                {features.map((feature, index) => (
-                                    <motion.li 
-                                        key={index}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="flex items-start gap-3 text-white/80 group"
-                                    >
-                                        <div className="mt-1 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                                            <feature.icon className="w-3 h-3 text-primary" />
-                                        </div>
-                                        <span>{feature.label}</span>
-                                    </motion.li>
-                                ))}
-                            </ul>
+                            <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_0_340deg,#c9a37e_360deg)] animate-border-rotate" />
+                            <div className="relative h-full bg-[#1a1f21] rounded-2xl p-8">
+                                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                                    <Zap className="text-primary w-6 h-6" /> Points forts
+                                </h3>
+                                <ul className="space-y-4">
+                                    {features.map((feature, index) => (
+                                        <motion.li 
+                                            key={index}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className="flex items-start gap-3 text-white/80 group"
+                                        >
+                                            <div className="mt-1 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                                                <feature.icon className="w-3 h-3 text-primary" />
+                                            </div>
+                                            <span>{feature.label}</span>
+                                        </motion.li>
+                                    ))}
+                                </ul>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
