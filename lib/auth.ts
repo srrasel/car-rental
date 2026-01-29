@@ -1,8 +1,13 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "jwt" },
   providers: [
     Credentials({
       name: "Credentials",
@@ -15,29 +20,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const { email, password } = credentials;
+        const email = credentials.email as string;
+        const password = credentials.password as string;
 
-        // Mock Admin User
-        if (email === "admin@rental.com" && password === "admin123") {
+        try {
+          const user = await prisma.user.findUnique({
+            where: {
+              email: email,
+            },
+          });
+
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(password, user.password);
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
           return {
-            id: "1",
-            name: "Alex Morgan",
-            email: "admin@rental.com",
-            role: "admin",
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
           };
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
         }
-
-        // Mock Customer User
-        if (email === "customer@rental.com" && password === "customer123") {
-          return {
-            id: "2",
-            name: "John Doe",
-            email: "customer@rental.com",
-            role: "customer",
-          };
-        }
-
-        return null;
       }
     })
   ],
@@ -57,8 +69,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: "/login",
-  },
-  session: {
-    strategy: "jwt",
   },
 });

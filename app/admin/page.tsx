@@ -8,12 +8,89 @@ import {
   PieChart,
   AlertTriangle,
   Wrench,
-  DollarSign
+  DollarSign,
+  Loader2
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+interface DashboardStats {
+  activeRentals: number;
+  activeRentalsNewToday: number;
+  monthlyRevenue: number;
+  lastMonthRevenue: number;
+  pendingRequests: number;
+  fleetUtilization: number;
+  totalFleet: number;
+  availableCars: number;
+  rentedCars: number;
+}
+
+interface RecentBooking {
+  id: string;
+  user: {
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
+  carName: string;
+  carImage: string;
+  status: string;
+  totalPrice: number;
+  createdAt: string;
+  dateRange: string;
+}
 
 export default function AdminDashboard() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    activeRentals: 0,
+    activeRentalsNewToday: 0,
+    monthlyRevenue: 0,
+    lastMonthRevenue: 0,
+    pendingRequests: 0,
+    fleetUtilization: 0,
+    totalFleet: 0,
+    availableCars: 0,
+    rentedCars: 0
+  });
+  const [recentActivity, setRecentActivity] = useState<RecentBooking[]>([]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const res = await fetch("/api/admin/dashboard");
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data.stats);
+          setRecentActivity(data.recentActivity);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // Calculate revenue growth percentage
+  const revenueGrowth = stats.lastMonthRevenue > 0 
+    ? ((stats.monthlyRevenue - stats.lastMonthRevenue) / stats.lastMonthRevenue) * 100 
+    : 100;
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center bg-[#0c1315]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#c9a37e]" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[#0c1315]">
       {/* Header */}
@@ -54,11 +131,14 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white">12</span>
-                <span className="text-sm font-medium text-emerald-500">+2 today</span>
+                <span className="text-3xl font-bold text-white">{stats.activeRentals}</span>
+                <span className="text-sm font-medium text-emerald-500">+{stats.activeRentalsNewToday} today</span>
               </div>
               <div className="mt-2 h-1.5 w-full rounded-full bg-white/5">
-                <div className="h-1.5 w-[65%] rounded-full bg-[#c9a37e]"></div>
+                <div 
+                  className="h-1.5 rounded-full bg-[#c9a37e]" 
+                  style={{ width: `${Math.min((stats.activeRentals / (stats.totalFleet || 1)) * 100, 100)}%` }}
+                ></div>
               </div>
             </div>
 
@@ -71,10 +151,12 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white">$14,250</span>
-                <span className="text-sm font-medium text-emerald-500">+12.5%</span>
+                <span className="text-3xl font-bold text-white">${stats.monthlyRevenue.toLocaleString()}</span>
+                <span className={`text-sm font-medium ${revenueGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                  {revenueGrowth > 0 ? '+' : ''}{revenueGrowth.toFixed(1)}%
+                </span>
               </div>
-              <p className="mt-2 text-xs text-[#9da6b9]">Compared to $12,660 last month</p>
+              <p className="mt-2 text-xs text-[#9da6b9]">Compared to ${stats.lastMonthRevenue.toLocaleString()} last month</p>
             </div>
 
             {/* Pending Requests */}
@@ -86,10 +168,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white">3</span>
+                <span className="text-3xl font-bold text-white">{stats.pendingRequests}</span>
                 <span className="text-sm font-medium text-[#9da6b9]">new</span>
               </div>
-              <p className="mt-2 text-xs text-[#9da6b9]">Avg. response time: 24m</p>
+              <p className="mt-2 text-xs text-[#9da6b9]">Requires attention</p>
             </div>
 
             {/* Utilization */}
@@ -101,11 +183,14 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white">85%</span>
-                <span className="text-sm font-medium text-emerald-500">+5%</span>
+                <span className="text-3xl font-bold text-white">{stats.fleetUtilization}%</span>
+                <span className="text-sm font-medium text-emerald-500">Avg</span>
               </div>
               <div className="mt-2 h-1.5 w-full rounded-full bg-white/5">
-                <div className="h-1.5 w-[85%] rounded-full bg-purple-500"></div>
+                <div 
+                  className="h-1.5 rounded-full bg-purple-500" 
+                  style={{ width: `${stats.fleetUtilization}%` }}
+                ></div>
               </div>
             </div>
           </div>
@@ -117,7 +202,7 @@ export default function AdminDashboard() {
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-epilogue)' }}>Revenue Performance</h3>
-                  <p className="text-sm text-[#9da6b9]">Daily revenue over the last 30 days</p>
+                  <p className="text-sm text-[#9da6b9]">Daily revenue overview</p>
                 </div>
                 <select className="rounded-lg border border-white/10 bg-[#0c1315] px-3 py-1.5 text-sm font-medium text-white focus:border-[#c9a37e] focus:ring-[#c9a37e]">
                   <option>Last 30 Days</option>
@@ -127,31 +212,15 @@ export default function AdminDashboard() {
               </div>
               
               {/* Chart Placeholder */}
-              <div className="relative h-[300px] w-full">
-                <svg className="h-full w-full overflow-visible" fill="none" preserveAspectRatio="none" viewBox="0 0 800 300">
-                  {/* Grid Lines */}
-                  <line stroke="#374151" strokeOpacity="0.3" strokeWidth="1" x1="0" x2="800" y1="299" y2="299"></line>
-                  <line stroke="#374151" strokeDasharray="4 4" strokeOpacity="0.2" strokeWidth="1" x1="0" x2="800" y1="225" y2="225"></line>
-                  <line stroke="#374151" strokeDasharray="4 4" strokeOpacity="0.2" strokeWidth="1" x1="0" x2="800" y1="150" y2="150"></line>
-                  <line stroke="#374151" strokeDasharray="4 4" strokeOpacity="0.2" strokeWidth="1" x1="0" x2="800" y1="75" y2="75"></line>
-                  {/* Gradient Defs */}
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#c9a37e" stopOpacity="0.2"></stop>
-                      <stop offset="100%" stopColor="#c9a37e" stopOpacity="0"></stop>
-                    </linearGradient>
-                  </defs>
-                  {/* Chart Area */}
-                  <path d="M0 250 C50 250 50 150 100 150 C150 150 150 200 200 200 C250 200 250 100 300 100 C350 100 350 180 400 180 C450 180 450 120 500 120 C550 120 550 80 600 80 C650 80 650 160 700 160 C750 160 750 40 800 40 L800 300 L0 300 Z" fill="url(#chartGradient)"></path>
-                  {/* Chart Line */}
-                  <path d="M0 250 C50 250 50 150 100 150 C150 150 150 200 200 200 C250 200 250 100 300 100 C350 100 350 180 400 180 C450 180 450 120 500 120 C550 120 550 80 600 80 C650 80 650 160 700 160 C750 160 750 40 800 40" fill="none" stroke="#c9a37e" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
-                  {/* Tooltip Circle (Example Position) */}
-                  <circle cx="600" cy="80" fill="#c9a37e" r="6" stroke="white" strokeWidth="2"></circle>
-                </svg>
-                {/* Fake Tooltip */}
-                <div className="absolute top-[50px] left-[550px] rounded bg-white px-3 py-1 text-xs text-[#0c1315] shadow-lg font-bold">
-                  $2,450 (Oct 24)
+              <div className="relative h-[300px] w-full flex items-center justify-center border border-dashed border-white/10 rounded-lg">
+                <div className="text-center">
+                    <p className="text-[#9da6b9] text-sm mb-2">Revenue Chart Visualization</p>
+                    <p className="text-xs text-[#9da6b9]/50">(Data visualization coming soon)</p>
                 </div>
+                {/* 
+                  We are keeping the SVG static for now as generating dynamic SVG paths 
+                  requires more complex data aggregation from the backend 
+                */}
               </div>
             </div>
 
@@ -194,30 +263,32 @@ export default function AdminDashboard() {
                     <svg className="h-full w-full rotate-[-90deg]" viewBox="0 0 36 36">
                       {/* Ring Background */}
                       <path className="text-white/10" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4"></path>
+                      
                       {/* Segment 1: Rented (Gold) */}
-                      <path className="text-[#c9a37e]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="60, 100" strokeWidth="4"></path>
-                      {/* Segment 2: Available (Green) */}
-                      <path className="text-emerald-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="25, 100" strokeDashoffset="-60" strokeWidth="4"></path>
-                      {/* Segment 3: Maintenance (Amber) */}
-                      <path className="text-amber-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="15, 100" strokeDashoffset="-85" strokeWidth="4"></path>
+                      {stats.totalFleet > 0 && (
+                        <path 
+                            className="text-[#c9a37e]" 
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeDasharray={`${(stats.rentedCars / stats.totalFleet) * 100}, 100`} 
+                            strokeWidth="4"
+                        ></path>
+                      )}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-xl font-bold text-white">45</span>
+                      <span className="text-xl font-bold text-white">{stats.totalFleet}</span>
                       <span className="text-[10px] uppercase text-[#9da6b9]">Total Cars</span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-full bg-[#c9a37e]"></span>
-                      <span className="text-sm text-[#9da6b9]">Rented (60%)</span>
+                      <span className="text-sm text-[#9da6b9]">Rented ({stats.rentedCars})</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-full bg-emerald-500"></span>
-                      <span className="text-sm text-[#9da6b9]">Available (25%)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full bg-amber-500"></span>
-                      <span className="text-sm text-[#9da6b9]">Maintenance (15%)</span>
+                      <span className="text-sm text-[#9da6b9]">Available ({stats.availableCars})</span>
                     </div>
                   </div>
                 </div>
@@ -229,7 +300,7 @@ export default function AdminDashboard() {
           <div className="rounded-xl border border-white/5 bg-[#1a1f21] shadow-sm mb-8">
             <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
               <h3 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-epilogue)' }}>Recent Activity</h3>
-              <Link href="#" className="text-sm font-medium text-[#c9a37e] hover:text-[#c9a37e]/80">View All</Link>
+              <Link href="/admin/bookings" className="text-sm font-medium text-[#c9a37e] hover:text-[#c9a37e]/80">View All</Link>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-[#9da6b9]">
@@ -245,71 +316,65 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  <tr className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 font-medium text-white">#BK-9281</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-16 shrink-0 overflow-hidden rounded-md bg-slate-700 relative">
-                            {/* Placeholder for Car Image */}
-                             <div className="absolute inset-0 bg-[#c9a37e]/20 flex items-center justify-center text-[10px] text-[#c9a37e]">IMG</div>
-                        </div>
-                        <span className="font-medium text-white">Tesla Model S</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-slate-700 relative overflow-hidden">
-                           <Image 
-                              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBa7Dsvp5Rp3AgWswEUY-w4wvPGVcM4WjkJU8OR2YzSgDDDhLNy9MifGaiIzYi1w0KvKV0TnhlqSOlOGTrF4nHjprNLD7btrDs_iuE8-UTC-qNwNS3zQ7wyHeMu4PwAhGhh9hnZNeOL2l65m3fw88IdimvuUtEfDx03DDTzSQKOs63DXzMR1hhpfg4_JqqHpTzaawyp0WsFBWHmCXcgomckME3YhXm_vJRUtPxTzZEdrr8TPHWto0SXUruSYvBljKV7fJB8d7JqS8J"
-                              alt="Customer"
-                              fill
-                              className="object-cover"
-                           />
-                        </div>
-                        James A.
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">Oct 24 - Oct 27</td>
-                    <td className="px-6 py-4 font-medium text-white">$450.00</td>
-                    <td className="px-6 py-4">
-                      <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-500">Active</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button className="text-[#c9a37e] hover:text-[#c9a37e]/80">Details</button>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 font-medium text-white">#BK-9280</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-16 shrink-0 overflow-hidden rounded-md bg-slate-700 relative">
-                             <div className="absolute inset-0 bg-[#c9a37e]/20 flex items-center justify-center text-[10px] text-[#c9a37e]">IMG</div>
-                        </div>
-                        <span className="font-medium text-white">BMW M4</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-slate-700 relative overflow-hidden">
-                             <Image 
-                              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLHMFjt_wSQVeKqL80OfrlpADPQKD1OkSHV2GC6DoI7UX9PCB0zHAmnQO_7ujSvDCsLHODEjirYgZF0TsFPToUnkGjU9TdqcXgCNtI0mStJrVhJOM8PMfuUghXjRRPsBVf4ZQF_9pyYc5aWDTGg3N0LbrDJnIi-k6DmDzOIS7ell9U_Ax0pAmhranH3bcaglYgFjJyU3QxBOoaS5fubspdM0NGpjNbf5p7p_h32kj-OSFNnvHwgQACNw_4exC3ymwXGQtruKcjoADG"
-                              alt="Customer"
-                              fill
-                              className="object-cover"
-                           />
-                        </div>
-                        Sarah S.
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">Oct 20 - Oct 22</td>
-                    <td className="px-6 py-4 font-medium text-white">$380.00</td>
-                    <td className="px-6 py-4">
-                      <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-500">Completed</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button className="text-[#c9a37e] hover:text-[#c9a37e]/80">Details</button>
-                    </td>
-                  </tr>
+                  {recentActivity.length === 0 ? (
+                    <tr>
+                        <td colSpan={7} className="px-6 py-8 text-center text-[#9da6b9]">
+                            No recent activity found.
+                        </td>
+                    </tr>
+                  ) : (
+                    recentActivity.map((booking) => (
+                        <tr key={booking.id} className="hover:bg-white/5 transition-colors">
+                            <td className="px-6 py-4 font-medium text-white">
+                                <span title={booking.id}>#{booking.id.slice(-6).toUpperCase()}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-16 shrink-0 overflow-hidden rounded-md bg-slate-700 relative">
+                                    {booking.carImage ? (
+                                        <Image src={booking.carImage} alt={booking.carName} fill className="object-cover" />
+                                    ) : (
+                                        <div className="absolute inset-0 bg-[#c9a37e]/20 flex items-center justify-center text-[10px] text-[#c9a37e]">IMG</div>
+                                    )}
+                                </div>
+                                <span className="font-medium text-white">{booking.carName}</span>
+                            </div>
+                            </td>
+                            <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                                <div className="h-6 w-6 rounded-full bg-slate-700 relative overflow-hidden">
+                                    <Image 
+                                        src={booking.user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(booking.user.name || "User")}&background=random`}
+                                        alt="Customer"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
+                                {booking.user.name || "Guest User"}
+                            </div>
+                            </td>
+                            <td className="px-6 py-4">{booking.dateRange}</td>
+                            <td className="px-6 py-4 font-medium text-white">${booking.totalPrice.toLocaleString()}</td>
+                            <td className="px-6 py-4">
+                                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                    booking.status === 'CONFIRMED' ? 'bg-emerald-500/10 text-emerald-500' :
+                                    booking.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-500' :
+                                    'bg-red-500/10 text-red-500'
+                                }`}>
+                                    {booking.status}
+                                </span>
+                            </td>
+                            <td className="px-6 py-4">
+                            <button 
+                                onClick={() => router.push(`/admin/bookings/${booking.id}`)}
+                                className="text-[#c9a37e] hover:text-[#c9a37e]/80"
+                            >
+                                Details
+                            </button>
+                            </td>
+                        </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

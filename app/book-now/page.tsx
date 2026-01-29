@@ -28,16 +28,21 @@ import { useState, useEffect, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { allCars } from "@/lib/data";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function BookingContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [dateRange, setDateRange] = useState({ 
         start: searchParams.get("pickup") || "", 
         end: searchParams.get("return") || "" 
     });
     const [extraKm, setExtraKm] = useState("0");
-    const [selectedCar] = useState<typeof allCars[0] | null>(allCars[0]);
+    
+    // Get car from URL or default to first
+    const carId = parseInt(searchParams.get("carId") || "1");
+    const [selectedCar] = useState(allCars.find(c => c.id === carId) || allCars[0]);
+
     const [totalPrice, setTotalPrice] = useState(0);
     const [days, setDays] = useState(0);
     const [files, setFiles] = useState<{ license: File | null; identity: File | null }>({
@@ -45,6 +50,63 @@ function BookingContent() {
         identity: null
     });
     const [paymentMethod, setPaymentMethod] = useState("stripe");
+    const [currency, setCurrency] = useState<string>("CHF");
+    const [gateways, setGateways] = useState<{ stripe: boolean; paypal: boolean }>({ stripe: true, paypal: true });
+    
+    // Form Data State
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: ""
+    });
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleBooking = async () => {
+        if (!selectedCar) return;
+
+        try {
+            const bookingData = {
+                carId: selectedCar.id,
+                startDate: dateRange.start,
+                endDate: dateRange.end,
+                totalPrice: totalPrice,
+                paymentMethod: paymentMethod === "test" ? "SIMULATION" : paymentMethod.toUpperCase(),
+                user: formData // In a real app, user ID comes from session, but here we might need to handle guest or ensure auth
+            };
+
+            // If using Test Gateway, call API directly
+            if (paymentMethod === "test") {
+                const res = await fetch("/api/bookings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(bookingData),
+                });
+
+                if (res.ok) {
+                    router.push("/dashboard?booking=success");
+                } else {
+                    const errorData = await res.json().catch(() => ({}));
+                    console.error("Booking failed:", errorData);
+                    alert(`Booking failed: ${errorData.error || "Unknown error"}. ${errorData.details || "Please try again."}`);
+                }
+            } else if (paymentMethod === "stripe") {
+                // Redirect to the dedicated payment page for Stripe
+                router.push(`/fleet/${selectedCar.id}/payment?startDate=${dateRange.start}&endDate=${dateRange.end}&totalPrice=${totalPrice}`);
+            } else {
+                alert("Payment method not fully implemented in this demo.");
+            }
+        } catch (error) {
+            console.error("Booking error:", error);
+            alert("An error occurred.");
+        }
+    };
+
 
     // Calculate days
     useEffect(() => {
@@ -90,8 +152,37 @@ function BookingContent() {
         }
     };
 
-    const isFormValid = days >= 2 && files.license && files.identity;
+    const isFormValid = days >= 2 && 
+                        files.license && 
+                        files.identity && 
+                        formData.firstName.trim() !== "" && 
+                        formData.lastName.trim() !== "" && 
+                        formData.email.trim() !== "" && 
+                        formData.phone.trim() !== "" && 
+                        formData.address.trim() !== "";
 
+    // Load public settings for currency and enabled gateways
+    useEffect(() => {
+        async function loadSettings() {
+            try {
+                const res = await fetch("/api/settings");
+                if (res.ok) {
+                    const data = await res.json();
+                    setCurrency((data.currency || "USD").toUpperCase());
+                    setGateways({
+                        stripe: !!data.stripePublishableKey,
+                        paypal: !!data.paypalClientId,
+                    });
+                    if (!data.stripePublishableKey && data.paypalClientId) {
+                        setPaymentMethod("paypal");
+                    }
+                }
+            } catch {
+                // Keep defaults
+            }
+        }
+        loadSettings();
+    }, []);
     // Animation variants
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -261,30 +352,62 @@ function BookingContent() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-3 group">
                                             <Label className="text-xs font-bold text-[#a1a1a1] uppercase tracking-wider">Prénom</Label>
-                                            <Input className="bg-black/20 border-white/10 text-white h-14 px-4 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" placeholder="Jean" />
+                                            <Input 
+                                                name="firstName"
+                                                value={formData.firstName}
+                                                onChange={handleInputChange}
+                                                className="bg-black/20 border-white/10 text-white h-14 px-4 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" 
+                                                placeholder="Jean" 
+                                            />
                                         </div>
                                         <div className="space-y-3 group">
                                             <Label className="text-xs font-bold text-[#a1a1a1] uppercase tracking-wider">Nom</Label>
-                                            <Input className="bg-black/20 border-white/10 text-white h-14 px-4 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" placeholder="Dupont" />
+                                            <Input 
+                                                name="lastName"
+                                                value={formData.lastName}
+                                                onChange={handleInputChange}
+                                                className="bg-black/20 border-white/10 text-white h-14 px-4 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" 
+                                                placeholder="Dupont" 
+                                            />
                                         </div>
                                         <div className="space-y-3 group">
                                             <Label className="text-xs font-bold text-[#a1a1a1] uppercase tracking-wider">Email</Label>
                                             <div className="relative">
-                                                <Input className="bg-black/20 border-white/10 text-white h-14 pl-12 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" placeholder="jean.dupont@email.com" type="email" />
+                                                <Input 
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    className="bg-black/20 border-white/10 text-white h-14 pl-12 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" 
+                                                    placeholder="jean.dupont@email.com" 
+                                                    type="email" 
+                                                />
                                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#a1a1a1] group-focus-within:text-primary transition-colors" />
                                             </div>
                                         </div>
                                         <div className="space-y-3 group">
                                             <Label className="text-xs font-bold text-[#a1a1a1] uppercase tracking-wider">Téléphone</Label>
                                             <div className="relative">
-                                                <Input className="bg-black/20 border-white/10 text-white h-14 pl-12 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" placeholder="+41 79 123 45 67" type="tel" />
+                                                <Input 
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={handleInputChange}
+                                                    className="bg-black/20 border-white/10 text-white h-14 pl-12 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" 
+                                                    placeholder="+41 79 123 45 67" 
+                                                    type="tel" 
+                                                />
                                                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#a1a1a1] group-focus-within:text-primary transition-colors" />
                                             </div>
                                         </div>
                                         <div className="space-y-3 md:col-span-2 group">
                                             <Label className="text-xs font-bold text-[#a1a1a1] uppercase tracking-wider">Adresse complète</Label>
                                             <div className="relative">
-                                                <Input className="bg-black/20 border-white/10 text-white h-14 pl-12 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" placeholder="Rue de la Gare 1, 1000 Lausanne" />
+                                                <Input 
+                                                    name="address"
+                                                    value={formData.address}
+                                                    onChange={handleInputChange}
+                                                    className="bg-black/20 border-white/10 text-white h-14 pl-12 rounded-xl focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all" 
+                                                    placeholder="Rue de la Gare 1, 1000 Lausanne" 
+                                                />
                                                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#a1a1a1] group-focus-within:text-primary transition-colors" />
                                             </div>
                                         </div>
@@ -402,6 +525,7 @@ function BookingContent() {
                                         </div>
 
                                         {/* PayPal */}
+                                        {gateways.paypal && (
                                         <div 
                                             className={cn(
                                                 "relative overflow-hidden border rounded-2xl p-4 cursor-pointer transition-all duration-300 group",
@@ -424,6 +548,7 @@ function BookingContent() {
                                                 <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-[#003087]/20 blur-xl rounded-full" />
                                             )}
                                         </div>
+                                        )}
 
                                         {/* Test Gateway */}
                                         <div 
@@ -498,7 +623,7 @@ function BookingContent() {
                                             </div>
                                             <div className="flex justify-between items-center py-2 border-b border-white/5">
                                                 <span className="text-[#a1a1a1] text-sm">Prix journalier</span>
-                                                <span className="font-bold font-mono">{selectedCar?.price} CHF</span>
+                                                <span className="font-bold font-mono">{selectedCar?.price} {currency}</span>
                                             </div>
                                             {extraKm !== "0" && (
                                                 <div className="flex justify-between items-center py-2 border-b border-white/5">
@@ -515,13 +640,14 @@ function BookingContent() {
                                         <div className="bg-white/5 rounded-xl p-5 border border-white/5">
                                             <div className="flex justify-between items-end mb-1">
                                                 <span className="text-base font-bold text-white/80">Total estimé</span>
-                                                <span className="text-3xl font-bold text-primary font-epilogue">{totalPrice.toFixed(2)} <span className="text-sm text-primary/50">CHF</span></span>
+                                                <span className="text-3xl font-bold text-primary font-epilogue">{totalPrice.toFixed(2)} <span className="text-sm text-primary/50">{currency}</span></span>
                                             </div>
                                             <p className="text-[10px] text-[#a1a1a1] text-right">TVA incluse</p>
                                         </div>
 
                                         <div className="space-y-4">
                                             <Button 
+                                                onClick={handleBooking}
                                                 disabled={!isFormValid}
                                                 className={cn(
                                                     "w-full h-14 text-base font-bold transition-all duration-300 rounded-xl group disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:scale-100 hover:scale-[1.02]",

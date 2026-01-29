@@ -2,15 +2,10 @@
 
 import {
   LayoutDashboard,
-  Car,
   Calendar,
   Users,
   Settings,
   LogOut,
-  CreditCard,
-  ShieldCheck,
-  Bell,
-  FileText,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -56,11 +51,6 @@ export default function AdminSidebar() {
             <span className="text-sm font-medium">Dashboard</span>
           </Link>
 
-          <Link href="/admin/fleet" className={getLinkClasses("/admin/fleet")}>
-            <Car className="w-5 h-5" />
-            <span className="text-sm font-medium">Fleet</span>
-          </Link>
-
           <Link href="/admin/bookings" className={getLinkClasses("/admin/bookings")}>
             <Calendar className="w-5 h-5" />
             <span className="text-sm font-medium">Bookings</span>
@@ -72,25 +62,6 @@ export default function AdminSidebar() {
           <Link href="/admin/customers" className={getLinkClasses("/admin/customers")}>
             <Users className="w-5 h-5" />
             <span className="text-sm font-medium">Customers</span>
-          </Link>
-
-          <p className="mt-6 px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-[#9da6b9]">
-            Management
-          </p>
-
-          <Link href="/admin/payments" className={getLinkClasses("/admin/payments")}>
-            <CreditCard className="w-5 h-5" />
-            <span className="text-sm font-medium">Financials</span>
-          </Link>
-          
-          <Link href="/admin/notifications" className={getLinkClasses("/admin/notifications")}>
-             <Bell className="w-5 h-5" />
-             <span className="text-sm font-medium">Notifications</span>
-          </Link>
-
-          <Link href="/admin/permissions" className={getLinkClasses("/admin/permissions")}>
-            <ShieldCheck className="w-5 h-5" />
-            <span className="text-sm font-medium">Permissions</span>
           </Link>
         </nav>
 

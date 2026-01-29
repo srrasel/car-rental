@@ -9,233 +9,302 @@ import {
   Download,
   MoreVertical,
   Mail,
-  Phone,
   BadgeCheck,
-  Clock,
-  Menu,
-  Key,
   UserPlus,
-  Bell
+  Bell,
+  Loader2,
+  DollarSign
 } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  image: string | null;
+  totalBookings: number;
+  lastActive: string | null;
+  totalSpent: number;
+}
 
 export default function CustomersPage() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  // Reset page on search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await fetch("/api/admin/customers");
+      if (response.ok) {
+        const data = await response.json();
+        setCustomers(data);
+      }
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCustomers = customers.filter(customer => 
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalCustomers = customers.length;
+  const activeBookers = customers.filter(c => c.totalBookings > 0).length;
+  const totalRevenue = customers.reduce((acc, curr) => acc + (curr.totalSpent || 0), 0);
+
+  // Calculate average spent per customer (for those who have booked)
+  const avgSpent = activeBookers > 0 ? totalRevenue / activeBookers : 0;
+
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
-    <div className="flex h-full flex-col overflow-hidden relative">
-        {/* Top Navigation */}
-        <header className="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-[#0c1315] shrink-0 z-10">
-            <div className="flex items-center gap-4">
-                <button className="md:hidden text-white">
-                    <Menu className="w-6 h-6" />
-                </button>
-                <h2 className="text-xl font-bold text-white tracking-tight font-[family-name:var(--font-epilogue)]">Customer Management</h2>
+    <div className="flex h-full flex-col overflow-hidden bg-[#0c1315]">
+      {/* Top Navigation */}
+      <header className="flex h-16 items-center justify-between border-b border-white/5 bg-[#0c1315] px-8 shrink-0">
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'var(--font-epilogue)' }}>Customer Management</h2>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="relative hidden w-full max-w-md md:flex">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="w-5 h-5 text-[#9da6b9]" />
             </div>
-            <div className="flex items-center gap-4">
-                <div className="relative hidden sm:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9da6b9] w-5 h-5" />
-                    <input 
-                        className="pl-10 pr-4 py-2 rounded-lg bg-[#1a1f21] border border-white/10 text-sm text-white placeholder-[#9da6b9] focus:outline-none focus:border-[#c9a37e] focus:ring-1 focus:ring-[#c9a37e] w-64 transition-all" 
-                        placeholder="Search by name, email..." 
-                        type="text"
-                    />
+            <input 
+              className="block w-64 rounded-lg border-0 bg-[#1a1f21] py-2 pl-10 pr-4 text-sm text-white placeholder-[#9da6b9] focus:ring-2 focus:ring-[#c9a37e]" 
+              placeholder="Search customers..." 
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <button className="relative rounded-full p-1.5 text-[#9da6b9] hover:bg-white/5 hover:text-white transition-colors">
+            <Bell className="w-6 h-6" />
+          </button>
+          <button 
+            onClick={() => router.push("/admin/customers/new")}
+            className="flex items-center gap-2 rounded-lg bg-[#c9a37e] px-4 py-2 text-sm font-bold text-[#0c1315] shadow-[0_0_15px_rgba(201,163,126,0.3)] hover:bg-[#b89574] transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Add Customer</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto p-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8">
+            {/* KPI Cards */}
+            <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-white/5 bg-[#1a1f21] p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                        <span className="text-sm font-medium text-[#9da6b9]">Total Customers</span>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+                            <Users className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-white">{totalCustomers}</span>
+                        <span className="text-xs font-medium text-emerald-500 flex items-center">
+                            <TrendingUp className="w-3 h-3 mr-1" />
+                            +5.2%
+                        </span>
+                    </div>
                 </div>
-                <button className="flex items-center justify-center size-10 rounded-lg text-[#9da6b9] hover:bg-white/5 hover:text-white transition-colors relative">
-                    <Bell className="w-6 h-6" />
-                    <span className="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border-2 border-[#0c1315]"></span>
-                </button>
-                <button className="bg-[#c9a37e] hover:bg-[#b89574] text-[#0c1315] text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(201,163,126,0.3)]">
-                    <Plus className="w-5 h-5" />
-                    <span className="hidden sm:inline">Add Customer</span>
-                </button>
+
+                <div className="rounded-xl border border-white/5 bg-[#1a1f21] p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                        <span className="text-sm font-medium text-[#9da6b9]">Active Bookers</span>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
+                            <UserPlus className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-white">{activeBookers}</span>
+                        <span className="text-xs font-medium text-emerald-500 flex items-center">
+                            <TrendingUp className="w-3 h-3 mr-1" />
+                            +12%
+                        </span>
+                    </div>
+                </div>
+
+                <div className="rounded-xl border border-white/5 bg-[#1a1f21] p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                        <span className="text-sm font-medium text-[#9da6b9]">Avg. Spent</span>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                            <DollarSign className="w-5 h-5" />
+                        </div>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-white">${avgSpent.toFixed(0)}</span>
+                        <span className="text-xs font-medium text-[#9da6b9]">per customer</span>
+                    </div>
+                </div>
             </div>
-        </header>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 scrollbar-hide">
-            <div className="max-w-7xl mx-auto flex flex-col gap-8">
-                {/* KPI Cards */}
-                <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-[#1a1f21] rounded-xl p-5 border border-white/5 shadow-sm">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-2 bg-blue-500/10 rounded-lg">
-                                <Users className="w-7 h-7 text-blue-500" />
-                            </div>
-                            <span className="flex items-center text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">
-                                <TrendingUp className="w-3.5 h-3.5 mr-1" />
-                                +5.2%
-                            </span>
-                        </div>
-                        <p className="text-[#9da6b9] text-sm font-medium">Total Customers</p>
-                        <h3 className="text-2xl font-bold text-white mt-1">1,248</h3>
+            {/* Table Section */}
+            <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 rounded-lg bg-[#1a1f21] p-1 border border-white/5">
+                        <button className="rounded-md bg-[#c9a37e] px-4 py-1.5 text-xs font-medium text-[#0c1315] shadow-sm">All Customers</button>
+                        <button className="rounded-md px-4 py-1.5 text-xs font-medium text-[#9da6b9] hover:bg-white/5 hover:text-white transition-colors">VIP</button>
+                        <button className="rounded-md px-4 py-1.5 text-xs font-medium text-[#9da6b9] hover:bg-white/5 hover:text-white transition-colors">New</button>
                     </div>
-                    <div className="bg-[#1a1f21] rounded-xl p-5 border border-white/5 shadow-sm">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-2 bg-purple-500/10 rounded-lg">
-                                <Key className="w-7 h-7 text-purple-500" />
-                            </div>
-                            <span className="flex items-center text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">
-                                <TrendingUp className="w-3.5 h-3.5 mr-1" />
-                                +2.4%
-                            </span>
-                        </div>
-                        <p className="text-[#9da6b9] text-sm font-medium">Active Rentals</p>
-                        <h3 className="text-2xl font-bold text-white mt-1">45</h3>
+                    <div className="flex gap-3">
+                        <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#1a1f21] px-3 py-2 text-sm font-medium text-[#9da6b9] hover:bg-white/5 hover:text-white transition-colors">
+                            <Filter className="w-4 h-4" />
+                            Filters
+                        </button>
+                        <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-[#1a1f21] px-3 py-2 text-sm font-medium text-[#9da6b9] hover:bg-white/5 hover:text-white transition-colors">
+                            <Download className="w-4 h-4" />
+                            Export
+                        </button>
                     </div>
-                    <div className="bg-[#1a1f21] rounded-xl p-5 border border-white/5 shadow-sm">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-2 bg-orange-500/10 rounded-lg">
-                                <UserPlus className="w-7 h-7 text-orange-500" />
-                            </div>
-                            <span className="flex items-center text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">
-                                <TrendingUp className="w-3.5 h-3.5 mr-1" />
-                                +12%
-                            </span>
-                        </div>
-                        <p className="text-[#9da6b9] text-sm font-medium">New This Month</p>
-                        <h3 className="text-2xl font-bold text-white mt-1">18</h3>
-                    </div>
-                </section>
-
-                {/* Table Section */}
-                <section className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-white">All Customers</h3>
-                        <div className="flex gap-2">
-                            <button className="flex items-center gap-2 px-3 py-2 bg-[#1a1f21] border border-white/10 rounded-lg text-sm font-medium text-[#9da6b9] hover:text-white hover:bg-white/5 transition-colors">
-                                <Filter className="w-4.5 h-4.5" />
-                                Filter
-                            </button>
-                            <button className="flex items-center gap-2 px-3 py-2 bg-[#1a1f21] border border-white/10 rounded-lg text-sm font-medium text-[#9da6b9] hover:text-white hover:bg-white/5 transition-colors">
-                                <Download className="w-4.5 h-4.5" />
-                                Export
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div className="bg-[#1a1f21] rounded-xl border border-white/5 overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-[#0c1315] border-b border-white/5">
+                </div>
+                
+                <div className="rounded-xl border border-white/5 bg-[#1a1f21] shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm text-[#9da6b9]">
+                            <thead className="bg-[#0c1315] text-xs uppercase text-[#9da6b9]">
+                                <tr>
+                                    <th className="px-6 py-4 font-semibold w-1/4">Customer Name</th>
+                                    <th className="px-6 py-4 font-semibold">Contact Info</th>
+                                    <th className="px-6 py-4 font-semibold">Role</th>
+                                    <th className="px-6 py-4 font-semibold text-center">Bookings</th>
+                                    <th className="px-6 py-4 font-semibold text-right">Total Spent</th>
+                                    <th className="px-6 py-4 font-semibold">Last Active</th>
+                                    <th className="px-6 py-4 font-semibold text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {loading ? (
                                     <tr>
-                                        <th className="px-6 py-4 text-xs font-semibold text-[#9da6b9] uppercase tracking-wider w-1/4">Customer Name</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-[#9da6b9] uppercase tracking-wider">Contact Info</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-[#9da6b9] uppercase tracking-wider">License Status</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-[#9da6b9] uppercase tracking-wider text-center">Rentals</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-[#9da6b9] uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-[#9da6b9] uppercase tracking-wider text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {/* Row 1 */}
-                                    <tr className="hover:bg-white/5 transition-colors group cursor-pointer">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-700 relative">
-                                                    <Image 
-                                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBa7Dsvp5Rp3AgWswEUY-w4wvPGVcM4WjkJU8OR2YzSgDDDhLNy9MifGaiIzYi1w0KvKV0TnhlqSOlOGTrF4nHjprNLD7btrDs_iuE8-UTC-qNwNS3zQ7wyHeMu4PwAhGhh9hnZNeOL2l65m3fw88IdimvuUtEfDx03DDTzSQKOs63DXzMR1hhpfg4_JqqHpTzaawyp0WsFBWHmCXcgomckME3YhXm_vJRUtPxTzZEdrr8TPHWto0SXUruSYvBljKV7fJB8d7JqS8J"
-                                                        alt="James Anderson"
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-white">James Anderson</p>
-                                                    <p className="text-xs text-[#9da6b9]">ID: #CL-8921</p>
-                                                </div>
+                                        <td colSpan={7} className="px-6 py-12 text-center">
+                                            <div className="flex justify-center items-center gap-2 text-[#9da6b9]">
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                Loading customers...
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-2 text-sm text-white">
-                                                    <Mail className="w-4 h-4 text-[#9da6b9]" />
-                                                    james.a@example.com
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-[#9da6b9]">
-                                                    <Phone className="w-4 h-4 text-[#9da6b9]" />
-                                                    +1 (555) 012-3456
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                                                <BadgeCheck className="w-3.5 h-3.5 mr-1" />
-                                                Verified
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="text-sm font-medium text-white">12</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 ring-1 ring-inset ring-emerald-600/20">
-                                                <span className="size-1.5 rounded-full bg-emerald-500"></span>
-                                                Active
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="text-[#9da6b9] hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg">
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
                                         </td>
                                     </tr>
-                                    
-                                    {/* Row 2 */}
-                                    <tr className="hover:bg-white/5 transition-colors group cursor-pointer">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-700 relative">
-                                                    <Image 
-                                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLHMFjt_wSQVeKqL80OfrlpADPQKD1OkSHV2GC6DoI7UX9PCB0zHAmnQO_7ujSvDCsLHODEjirYgZF0TsFPToUnkGjU9TdqcXgCNtI0mStJrVhJOM8PMfuUghXjRRPsBVf4ZQF_9pyYc5aWDTGg3N0LbrDJnIi-k6DmDzOIS7ell9U_Ax0pAmhranH3bcaglYgFjJyU3QxBOoaS5fubspdM0NGpjNbf5p7p_h32kj-OSFNnvHwgQACNw_4exC3ymwXGQtruKcjoADG"
-                                                        alt="Sarah Smith"
-                                                        fill
-                                                        className="object-cover"
-                                                    />
+                                ) : filteredCustomers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-12 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-2">
+                                                <div className="rounded-full bg-white/5 p-3">
+                                                    <Users className="w-6 h-6 text-[#9da6b9]" />
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-white">Sarah Smith</p>
-                                                    <p className="text-xs text-[#9da6b9]">ID: #CL-8922</p>
-                                                </div>
+                                                <p className="text-white font-medium">No customers found</p>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-2 text-sm text-white">
-                                                    <Mail className="w-4 h-4 text-[#9da6b9]" />
-                                                    sarah.s@test.com
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-[#9da6b9]">
-                                                    <Phone className="w-4 h-4 text-[#9da6b9]" />
-                                                    +1 (555) 987-6543
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                                                <Clock className="w-3.5 h-3.5 mr-1" />
-                                                Pending
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="text-sm font-medium text-white">0</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-400 ring-1 ring-inset ring-yellow-600/20">
-                                                <span className="size-1.5 rounded-full bg-yellow-500"></span>
-                                                Pending
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="text-[#9da6b9] hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg">
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
+                                ) : (
+                                    filteredCustomers.map((customer) => (
+                                        <tr 
+                                            key={customer.id} 
+                                            onClick={() => router.push(`/admin/customers/${customer.id}`)}
+                                            className="hover:bg-white/5 transition-colors group cursor-pointer"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-800">
+                                                        <Image 
+                                                            src={customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.name)}&background=random`}
+                                                            alt={customer.name}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-white group-hover:text-[#c9a37e] transition-colors">{customer.name}</p>
+                                                        <p className="text-xs text-[#9da6b9]">ID: #{customer.id.slice(-6).toUpperCase()}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2 text-white">
+                                                    <Mail className="w-3.5 h-3.5 text-[#9da6b9]" />
+                                                    {customer.email}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                                                    customer.role === 'admin' 
+                                                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' 
+                                                        : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                                }`}>
+                                                    <BadgeCheck className="w-3 h-3 mr-1" />
+                                                    {customer.role}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="font-medium text-white">{customer.totalBookings}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right font-medium text-white">
+                                                ${(customer.totalSpent || 0).toLocaleString()}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-[#9da6b9]">
+                                                    {customer.lastActive ? new Date(customer.lastActive).toLocaleDateString() : 'Never'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button className="p-2 text-[#9da6b9] hover:bg-white/10 hover:text-white rounded-lg transition-colors">
+                                                    <MoreVertical className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/* Pagination */}
+                    <div className="border-t border-white/5 bg-[#0c1315] px-6 py-4 flex items-center justify-between">
+                        <span className="text-xs text-[#9da6b9]">
+                            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredCustomers.length)} of {filteredCustomers.length} customers
+                        </span>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1 text-xs font-medium text-[#9da6b9] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Previous
+                            </button>
+                            <button 
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-3 py-1 text-xs font-medium text-[#9da6b9] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
-                </section>
+                </div>
             </div>
         </div>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,134 @@
 "use client";
 
-import { CreditCard, Plus, Trash2, Download, FileText, CheckCircle, Clock } from "lucide-react";
-import Image from "next/image";
+import { CreditCard, Plus, Trash2, Download, FileText, CheckCircle, Loader2, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { format } from "date-fns";
+
+interface PaymentMethod {
+  id: string;
+  type: string;
+  last4: string;
+  expiryMonth: number;
+  expiryYear: number;
+  isDefault: boolean;
+}
+
+interface Transaction {
+  id: string;
+  description: string;
+  date: string;
+  amount: number;
+  status: string;
+  type: string;
+}
 
 export default function PaymentsPage() {
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState(true);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [newCard, setNewCard] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cvc: "",
+    cardHolder: "",
+  });
+  const [addingCard, setAddingCard] = useState(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [methodsRes, transactionsRes] = await Promise.all([
+          fetch("/api/dashboard/payments/methods"),
+          fetch("/api/dashboard/payments/transactions"),
+        ]);
+
+        if (methodsRes.ok) {
+          setPaymentMethods(await methodsRes.json());
+        }
+        if (transactionsRes.ok) {
+          setTransactions(await transactionsRes.json());
+        }
+      } catch (error) {
+        console.error("Failed to fetch payment data", error);
+        toast.error("Failed to load payment information");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (session?.user) {
+      fetchData();
+    }
+  }, [session]);
+
+  const handleDeleteCard = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this card?")) return;
+
+    try {
+      const res = await fetch(`/api/dashboard/payments/methods?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete card");
+
+      setPaymentMethods(paymentMethods.filter((pm) => pm.id !== id));
+      toast.success("Card removed successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to remove card");
+    }
+  };
+
+  const handleAddCard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddingCard(true);
+
+    // Simulate basic validation and processing
+    try {
+      // Extract dummy data
+      const last4 = newCard.cardNumber.slice(-4) || "4242";
+      const [month, year] = newCard.expiryDate.split("/");
+      
+      const payload = {
+        type: "VISA", // Mocking type detection
+        last4,
+        expiryMonth: parseInt(month || "12"),
+        expiryYear: parseInt("20" + (year || "25")),
+      };
+
+      const res = await fetch("/api/dashboard/payments/methods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to add card");
+
+      const addedMethod = await res.json();
+      setPaymentMethods([...paymentMethods, addedMethod]);
+      setShowAddCard(false);
+      setNewCard({ cardNumber: "", expiryDate: "", cvc: "", cardHolder: "" });
+      toast.success("Payment method added successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add payment method");
+    } finally {
+      setAddingCard(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#c9a37e]" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -26,55 +151,100 @@ export default function PaymentsPage() {
                     <CreditCard className="w-5 h-5 text-[#c9a37e]" />
                     Payment Methods
                 </h2>
-                <button className="flex items-center gap-2 text-sm font-medium text-[#c9a37e] hover:text-white transition-colors">
-                    <Plus className="w-4 h-4" />
-                    Add New Card
+                <button 
+                    onClick={() => setShowAddCard(!showAddCard)}
+                    className="flex items-center gap-2 text-sm font-medium text-[#c9a37e] hover:text-white transition-colors"
+                >
+                    {showAddCard ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    {showAddCard ? "Cancel" : "Add New Card"}
                 </button>
             </div>
             
-            <div className="grid gap-4">
-                {/* Card 1 */}
-                <div className="flex items-center justify-between p-4 bg-[#0c1315] border border-[#c9a37e] rounded-xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-1.5 bg-[#c9a37e] rounded-bl-lg">
-                        <CheckCircle className="w-3 h-3 text-[#0c1315]" />
-                    </div>
-                    <div className="flex items-center gap-4">
-                         <div className="w-12 h-8 bg-white/10 rounded flex items-center justify-center">
-                            {/* Visa Icon Placeholder */}
-                             <span className="font-bold text-white text-xs italic">VISA</span>
-                         </div>
-                         <div>
-                             <p className="text-white font-medium">•••• •••• •••• 4242</p>
-                             <p className="text-xs text-[#9da6b9]">Expires 12/25</p>
-                         </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <span className="text-xs font-medium text-[#c9a37e] hidden sm:block">Default</span>
-                        <button className="text-[#9da6b9] hover:text-red-500 transition-colors p-2 hover:bg-white/5 rounded-lg">
-                            <Trash2 className="w-4 h-4" />
+            {showAddCard && (
+                <div className="mb-6 p-4 bg-[#0c1315] rounded-xl border border-white/10">
+                    <form onSubmit={handleAddCard} className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-medium text-[#9da6b9] mb-1">Card Number</label>
+                            <input 
+                                type="text" 
+                                placeholder="0000 0000 0000 0000"
+                                className="w-full bg-[#1a1f21] border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#c9a37e] outline-none"
+                                value={newCard.cardNumber}
+                                onChange={e => setNewCard({...newCard, cardNumber: e.target.value})}
+                                maxLength={19}
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-medium text-[#9da6b9] mb-1">Expiry Date (MM/YY)</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="MM/YY"
+                                    className="w-full bg-[#1a1f21] border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#c9a37e] outline-none"
+                                    value={newCard.expiryDate}
+                                    onChange={e => setNewCard({...newCard, expiryDate: e.target.value})}
+                                    maxLength={5}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-[#9da6b9] mb-1">CVC</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="123"
+                                    className="w-full bg-[#1a1f21] border border-white/10 rounded-lg px-3 py-2 text-white focus:border-[#c9a37e] outline-none"
+                                    value={newCard.cvc}
+                                    onChange={e => setNewCard({...newCard, cvc: e.target.value})}
+                                    maxLength={3}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <button 
+                            type="submit" 
+                            disabled={addingCard}
+                            className="w-full bg-[#c9a37e] text-[#0c1315] font-bold py-2 rounded-lg hover:bg-[#b89574] transition-colors disabled:opacity-50"
+                        >
+                            {addingCard ? "Adding..." : "Save Card"}
                         </button>
-                    </div>
+                    </form>
                 </div>
+            )}
 
-                {/* Card 2 */}
-                <div className="flex items-center justify-between p-4 bg-[#0c1315] border border-white/5 rounded-xl relative overflow-hidden group">
-                    <div className="flex items-center gap-4">
-                         <div className="w-12 h-8 bg-white/10 rounded flex items-center justify-center">
-                             {/* Mastercard Icon Placeholder */}
-                             <span className="font-bold text-white text-xs italic">MC</span>
-                         </div>
-                         <div>
-                             <p className="text-white font-medium">•••• •••• •••• 8899</p>
-                             <p className="text-xs text-[#9da6b9]">Expires 09/26</p>
-                         </div>
+            <div className="grid gap-4">
+                {paymentMethods.length === 0 && !showAddCard && (
+                    <div className="text-center py-8 text-[#9da6b9]">
+                        No payment methods saved. Add a card to get started.
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button className="text-xs font-medium text-[#9da6b9] hover:text-white hidden sm:block">Set as Default</button>
-                        <button className="text-[#9da6b9] hover:text-red-500 transition-colors p-2 hover:bg-white/5 rounded-lg">
-                            <Trash2 className="w-4 h-4" />
-                        </button>
+                )}
+                {paymentMethods.map((method) => (
+                    <div key={method.id} className="flex items-center justify-between p-4 bg-[#0c1315] border border-white/10 rounded-xl relative overflow-hidden group hover:border-[#c9a37e]/50 transition-colors">
+                        {method.isDefault && (
+                            <div className="absolute top-0 right-0 p-1.5 bg-[#c9a37e] rounded-bl-lg">
+                                <CheckCircle className="w-3 h-3 text-[#0c1315]" />
+                            </div>
+                        )}
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-8 bg-white/10 rounded flex items-center justify-center">
+                                <span className="font-bold text-white text-xs italic">{method.type}</span>
+                            </div>
+                            <div>
+                                <p className="text-white font-medium">•••• •••• •••• {method.last4}</p>
+                                <p className="text-xs text-[#9da6b9]">Expires {method.expiryMonth}/{method.expiryYear}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            {method.isDefault && <span className="text-xs font-medium text-[#c9a37e] hidden sm:block">Default</span>}
+                            <button 
+                                onClick={() => handleDeleteCard(method.id)}
+                                className="text-[#9da6b9] hover:text-red-500 transition-colors p-2 hover:bg-white/5 rounded-lg"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
-                </div>
+                ))}
             </div>
           </section>
 
@@ -95,56 +265,37 @@ export default function PaymentsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                        <tr className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4 text-white font-medium">Rental - Tesla Model 3</td>
-                            <td className="px-6 py-4 text-[#9da6b9]">Oct 20, 2024</td>
-                            <td className="px-6 py-4 text-white">$450.00</td>
-                            <td className="px-6 py-4">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                    Paid
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                                <button className="text-[#c9a37e] hover:text-white transition-colors">
-                                    <Download className="w-4 h-4" />
-                                </button>
-                            </td>
-                        </tr>
-                         <tr className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4 text-white font-medium">Rental - BMW X5</td>
-                            <td className="px-6 py-4 text-[#9da6b9]">Sep 15, 2024</td>
-                            <td className="px-6 py-4 text-white">$450.00</td>
-                            <td className="px-6 py-4">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                    Paid
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                                <button className="text-[#c9a37e] hover:text-white transition-colors">
-                                    <Download className="w-4 h-4" />
-                                </button>
-                            </td>
-                        </tr>
-                         <tr className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4 text-white font-medium">Refund - Security Deposit</td>
-                            <td className="px-6 py-4 text-[#9da6b9]">Sep 16, 2024</td>
-                            <td className="px-6 py-4 text-emerald-400">+$200.00</td>
-                            <td className="px-6 py-4">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                    Refunded
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                                <button className="text-[#c9a37e] hover:text-white transition-colors">
-                                    <Download className="w-4 h-4" />
-                                </button>
-                            </td>
-                        </tr>
+                        {transactions.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="px-6 py-8 text-center text-[#9da6b9]">
+                                    No transactions found.
+                                </td>
+                            </tr>
+                        ) : (
+                            transactions.map((tx) => (
+                                <tr key={tx.id} className="hover:bg-white/5 transition-colors">
+                                    <td className="px-6 py-4 text-white font-medium">{tx.description}</td>
+                                    <td className="px-6 py-4 text-[#9da6b9]">{format(new Date(tx.date), "MMM d, yyyy")}</td>
+                                    <td className="px-6 py-4 text-white">${tx.amount.toFixed(2)}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                                            tx.status === "PAID" 
+                                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                                                : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+                                        }`}>
+                                            {tx.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button className="text-[#c9a37e] hover:text-white transition-colors">
+                                            <Download className="w-4 h-4" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
-            </div>
-            <div className="p-4 border-t border-white/5 text-center">
-                 <button className="text-sm text-[#9da6b9] hover:text-[#c9a37e] transition-colors">Load More Transactions</button>
             </div>
           </section>
         </div>
@@ -158,10 +309,16 @@ export default function PaymentsPage() {
                     <button className="text-xs text-[#c9a37e] hover:underline">Edit</button>
                 </div>
                 <div className="text-sm text-[#9da6b9] space-y-1">
-                    <p className="text-white font-medium">Alex Morgan</p>
-                    <p>123 Luxury Lane, Apt 4B</p>
-                    <p>Los Angeles, CA 90001</p>
-                    <p>United States</p>
+                    <p className="text-white font-medium">{session?.user?.name || "User"}</p>
+                    {billingAddress ? (
+                        <>
+                            <p>{billingAddress.address || "Address not set"}</p>
+                            <p>{billingAddress.city ? `${billingAddress.city}, ` : ""}{billingAddress.state || ""}{billingAddress.postalCode ? ` ${billingAddress.postalCode}` : ""}</p>
+                            <p>{billingAddress.country || "Country not set"}</p>
+                        </>
+                    ) : (
+                        <p>Loading address...</p>
+                    )}
                 </div>
              </section>
 

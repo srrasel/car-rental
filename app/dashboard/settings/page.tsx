@@ -1,9 +1,81 @@
 "use client";
 
-import { Bell, Shield, Moon, Globe, ChevronRight, LogOut, Trash2 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { Bell, Shield, Moon, Globe, ChevronRight, LogOut, Trash2, Loader2 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+interface Settings {
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  marketingEmails: boolean;
+  theme: string;
+  language: string;
+  twoFactorEnabled: boolean;
+}
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<Settings>({
+    emailNotifications: true,
+    pushNotifications: true,
+    marketingEmails: false,
+    theme: "system",
+    language: "en-US",
+    twoFactorEnabled: false,
+  });
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch("/api/dashboard/settings");
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (session?.user) {
+        fetchSettings();
+    }
+  }, [session]);
+
+  const updateSetting = async (key: keyof Settings, value: any) => {
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings); // Optimistic update
+
+    try {
+      const res = await fetch("/api/dashboard/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSettings),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update settings");
+      }
+      toast.success("Settings updated");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to save settings");
+      setSettings(settings); // Revert
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#c9a37e]" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -31,7 +103,12 @@ export default function SettingsPage() {
                 <p className="text-sm text-[#9da6b9]">Receive emails about your rentals and account activity.</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={settings.emailNotifications}
+                    onChange={(e) => updateSetting("emailNotifications", e.target.checked)}
+                />
                 <div className="w-11 h-6 bg-[#0c1315] border border-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c9a37e]"></div>
               </label>
             </div>
@@ -41,7 +118,12 @@ export default function SettingsPage() {
                 <p className="text-sm text-[#9da6b9]">Receive push notifications on your mobile device.</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={settings.pushNotifications}
+                    onChange={(e) => updateSetting("pushNotifications", e.target.checked)}
+                />
                 <div className="w-11 h-6 bg-[#0c1315] border border-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c9a37e]"></div>
               </label>
             </div>
@@ -51,7 +133,12 @@ export default function SettingsPage() {
                 <p className="text-sm text-[#9da6b9]">Receive offers, promotions, and news.</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={settings.marketingEmails}
+                    onChange={(e) => updateSetting("marketingEmails", e.target.checked)}
+                />
                 <div className="w-11 h-6 bg-[#0c1315] border border-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c9a37e]"></div>
               </label>
             </div>
@@ -103,13 +190,21 @@ export default function SettingsPage() {
             </h2>
           </div>
           <div className="divide-y divide-white/5">
-            <button className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-colors text-left">
+            <div className="flex items-center justify-between p-6">
                <div>
                    <p className="text-white font-medium">Two-Factor Authentication</p>
                    <p className="text-sm text-[#9da6b9]">Add an extra layer of security to your account.</p>
                </div>
-               <span className="text-emerald-500 text-sm font-medium bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Enabled</span>
-            </button>
+               <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={settings.twoFactorEnabled}
+                    onChange={(e) => updateSetting("twoFactorEnabled", e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-[#0c1315] border border-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#c9a37e]"></div>
+              </label>
+            </div>
              <button className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-colors text-left">
                <div>
                    <p className="text-white font-medium">Login History</p>

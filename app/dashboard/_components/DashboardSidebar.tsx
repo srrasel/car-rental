@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
 export default function DashboardSidebar() {
+  const { data: session } = useSession();
   const pathname = usePathname();
 
   const isActive = (path: string) => {
@@ -82,7 +83,7 @@ export default function DashboardSidebar() {
         <div className="flex items-center gap-3 bg-[#1a1f21] p-3 rounded-xl border border-white/5">
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-700">
             <Image
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_G0mpiIeb5uGbQnmo6uLlFDmBfaQk3AMWxRCZhfrlFxYSCCx4nxmtoZF5AGgpveoymoOqo8X3L2PxC6g0z64PnkcgLt1K69XXj7gHTX8i87J3IvePdG1hJy8fQWntiyx75dgbURYQ6oSQtTDmWihiBuXHx-fpz9njXc3lAHO-oCtNbzvgkDo46vH-J2UpYOsXLxnjF66WKhJjRl4X81FcxwHYeWW2XV1ft_qO9TJRwhI_xNkMe69cLpHXO9pm58T-vciPr4ID2HCe"
+              src={session?.user?.image || "/assets/placeholder-user.jpg"}
               alt="User profile"
               fill
               className="object-cover"
@@ -90,10 +91,10 @@ export default function DashboardSidebar() {
           </div>
           <div className="flex flex-col overflow-hidden">
             <p className="text-white text-sm font-semibold truncate">
-              Alex Morgan
+              {session?.user?.name || "User"}
             </p>
             <p className="text-[#9da6b9] text-xs truncate">
-              alex.m@example.com
+              {session?.user?.email || ""}
             </p>
           </div>
           <button className="ml-auto text-[#9da6b9] hover:text-white transition-colors" onClick={() => signOut({ callbackUrl: '/login' })}>

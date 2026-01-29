@@ -344,11 +344,16 @@ export default function CarDetailPage() {
 
                                         <Button 
                                             className="w-full mt-6 bg-primary text-black hover:bg-white hover:text-black font-bold h-12 text-base"
-                                            asChild
+                                            disabled={!isDateValid || totalPrice <= 0}
+                                            asChild={isDateValid && totalPrice > 0}
                                         >
-                                            <Link href="/book-now">
-                                                Réserver maintenant
-                                            </Link>
+                                            {isDateValid && totalPrice > 0 ? (
+                                                <Link href={`/fleet/${id}/payment?startDate=${startDate}&endDate=${endDate}&extraKm=${extraKm}&totalPrice=${finalTotal}`}>
+                                                    Réserver maintenant
+                                                </Link>
+                                            ) : (
+                                                <span>Sélectionnez des dates</span>
+                                            )}
                                         </Button>
                                         
                                         <p className="text-center text-[10px] text-muted-foreground mt-3">
