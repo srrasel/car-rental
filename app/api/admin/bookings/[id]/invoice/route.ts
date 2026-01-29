@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { allCars } from "@/lib/data";
 
 export async function POST(
     req: Request,

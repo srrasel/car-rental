@@ -29,6 +29,7 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [billingAddress, setBillingAddress] = useState<any>(null);
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCard, setNewCard] = useState({
     cardNumber: "",
@@ -41,9 +42,10 @@ export default function PaymentsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [methodsRes, transactionsRes] = await Promise.all([
+        const [methodsRes, transactionsRes, profileRes] = await Promise.all([
           fetch("/api/dashboard/payments/methods"),
           fetch("/api/dashboard/payments/transactions"),
+          fetch("/api/dashboard/profile"),
         ]);
 
         if (methodsRes.ok) {
@@ -51,6 +53,9 @@ export default function PaymentsPage() {
         }
         if (transactionsRes.ok) {
           setTransactions(await transactionsRes.json());
+        }
+        if (profileRes.ok) {
+          setBillingAddress(await profileRes.json());
         }
       } catch (error) {
         console.error("Failed to fetch payment data", error);

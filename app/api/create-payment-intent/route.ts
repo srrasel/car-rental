@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const settings = await prisma.settings.findFirst();
     const secretKey = settings?.stripeSecretKey || process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
     const stripe = new Stripe(secretKey, {
-      apiVersion: "2024-12-18.acacia",
+      apiVersion: "2025-12-15.clover" as any,
     });
 
     // Create a PaymentIntent with the order amount and currency
